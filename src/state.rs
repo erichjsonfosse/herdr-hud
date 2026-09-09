@@ -61,14 +61,14 @@ impl AgentStatus {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AgentEntry {
     pub pane_id: String,
     pub agent_name: String,
     pub status: AgentStatus,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct StatusBarState {
     pub mode: HerdrMode,
     pub active_workspace: Option<String>,
@@ -98,3 +98,8 @@ impl StatusBarState {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "state_unit.rs"]
+mod tests;
+
