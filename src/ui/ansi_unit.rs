@@ -35,4 +35,3 @@ fn test_render_ansi_line_with_agents() {
     assert!(line.contains("●"));
     assert!(line.contains("agy: working"));
 }
-
