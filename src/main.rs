@@ -1,12 +1,12 @@
-mod client;
-mod config;
-mod helpers;
-mod state;
-mod ui;
+use herdr_status_bar::client::HerdrClient;
+use herdr_status_bar::config::StatusBarConfig;
+use herdr_status_bar::state::{HerdrMode, StatusBarState};
+use herdr_status_bar::ui::{
+    get_palette_categories, render_ansi_line, ActionKind, MenuModalWidget, PaletteAction,
+    StatusBarWidget,
+};
 
 use clap::{Parser, Subcommand};
-use client::HerdrClient;
-use config::StatusBarConfig;
 use crossterm::{
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind,
@@ -16,11 +16,9 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use ratatui::{backend::CrosstermBackend, Terminal};
-use state::{HerdrMode, StatusBarState};
 use std::io::stdout;
 use std::process::Command as SysCommand;
 use std::time::Duration;
-use ui::{get_palette_categories, render_ansi_line, ActionKind, MenuModalWidget, PaletteAction, StatusBarWidget};
 
 #[derive(Parser)]
 #[command(name = "herdr-status-bar")]
