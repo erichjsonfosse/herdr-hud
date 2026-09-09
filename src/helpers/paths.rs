@@ -45,3 +45,7 @@ pub fn discover_socket() -> Option<PathBuf> {
     }
     None
 }
+
+#[cfg(test)]
+#[path = "paths_unit.rs"]
+mod tests;
