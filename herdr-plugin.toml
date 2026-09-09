@@ -1,0 +1,33 @@
+id = "herdr-status-bar"
+name = "Herdr Status Bar"
+version = "0.1.0"
+description = "Context-based Zellij-inspired status bar for the Herdr workspace manager"
+authors = ["Erich Json Fosse"]
+platforms = ["linux", "macos"]
+
+[build]
+command = ["cargo", "build", "--release"]
+
+[[panes]]
+id = "menu"
+title = "Tuxedo Cat & Shortcuts"
+platforms = ["linux", "macos"]
+placement = "popup"
+width = "65%"
+height = 22
+command = ["target/release/herdr-status-bar", "menu"]
+
+[[actions]]
+id = "status-line"
+title = "Print status bar line"
+command = ["target/release/herdr-status-bar", "line"]
+
+[[actions]]
+id = "open-menu"
+title = "Open Tuxedo Cat & Shortcut Reference"
+command = ["target/release/herdr-status-bar", "menu"]
+
+[[actions]]
+id = "status-check"
+title = "Check Herdr socket connection"
+command = ["target/release/herdr-status-bar", "check"]
