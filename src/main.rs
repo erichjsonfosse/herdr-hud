@@ -1,10 +1,8 @@
 use herdr_status_bar::client::HerdrClient;
 use herdr_status_bar::config::StatusBarConfig;
 use herdr_status_bar::state::{HerdrMode, StatusBarState};
-use herdr_status_bar::ui::{
-    get_palette_categories, render_ansi_line, ActionKind, MenuModalWidget, PaletteAction,
-    StatusBarWidget,
-};
+use herdr_status_bar::palette::{get_palette_categories, trigger_action, ModalInputTarget};
+use herdr_status_bar::ui::{render_ansi_line, MenuModalWidget, StatusBarWidget};
 
 use clap::{Parser, Subcommand};
 use crossterm::{
@@ -40,12 +38,6 @@ enum Commands {
     Check,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum ModalInputTarget {
-    CreateTab,
-    RenameWorkspace,
-    RenameTab,
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -84,112 +76,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn trigger_action(
-    action: &PaletteAction,
-    state: &StatusBarState,
-    input_target: &mut Option<ModalInputTarget>,
-    input_buffer: &mut String,
-    pending_command: &mut Option<Vec<String>>,
-) -> bool {
-    match action.kind {
-        ActionKind::DirectCommand => {
-            if let Some(cmd) = &action.command {
-                *pending_command = Some(cmd.clone());
-                return true;
-            }
-        }
-        ActionKind::PromptCreateTab => {
-            *input_target = Some(ModalInputTarget::CreateTab);
-            input_buffer.clear();
-        }
-        ActionKind::PromptRenameWorkspace => {
-            *input_target = Some(ModalInputTarget::RenameWorkspace);
-            *input_buffer = state.active_workspace_label.clone().unwrap_or_default();
-        }
-        ActionKind::PromptRenameTab => {
-            *input_target = Some(ModalInputTarget::RenameTab);
-            *input_buffer = state.active_tab_label.clone().unwrap_or_default();
-        }
-        ActionKind::CloseActiveWorkspace => {
-            if let Some(ws_id) = &state.active_workspace_id {
-                *pending_command = Some(vec![
-                    "herdr".to_string(),
-                    "workspace".to_string(),
-                    "close".to_string(),
-                    ws_id.clone(),
-                ]);
-                return true;
-            }
-        }
-        ActionKind::CloseActiveTab => {
-            if let Some(tab_id) = &state.active_tab_id {
-                *pending_command = Some(vec![
-                    "herdr".to_string(),
-                    "tab".to_string(),
-                    "close".to_string(),
-                    tab_id.clone(),
-                ]);
-                return true;
-            }
-        }
-        ActionKind::CloseActivePane => {
-            if let Some(pane_id) = &state.active_pane {
-                *pending_command = Some(vec![
-                    "herdr".to_string(),
-                    "pane".to_string(),
-                    "close".to_string(),
-                    pane_id.clone(),
-                ]);
-                return true;
-            }
-        }
-        ActionKind::SplitVertical => {
-            let mut cmd = vec![
-                "herdr".to_string(),
-                "pane".to_string(),
-                "split".to_string(),
-                "--direction".to_string(),
-                "right".to_string(),
-                "--focus".to_string(),
-            ];
-            if let Some(pane_id) = &state.active_pane {
-                cmd.push("--pane".to_string());
-                cmd.push(pane_id.clone());
-            }
-            *pending_command = Some(cmd);
-            return true;
-        }
-        ActionKind::SplitHorizontal => {
-            let mut cmd = vec![
-                "herdr".to_string(),
-                "pane".to_string(),
-                "split".to_string(),
-                "--direction".to_string(),
-                "down".to_string(),
-                "--focus".to_string(),
-            ];
-            if let Some(pane_id) = &state.active_pane {
-                cmd.push("--pane".to_string());
-                cmd.push(pane_id.clone());
-            }
-            *pending_command = Some(cmd);
-            return true;
-        }
-        ActionKind::ToggleZoom => {
-            let mut cmd = vec!["herdr".to_string(), "pane".to_string(), "zoom".to_string()];
-            if let Some(pane_id) = &state.active_pane {
-                cmd.push("--pane".to_string());
-                cmd.push(pane_id.clone());
-            } else {
-                cmd.push("--current".to_string());
-            }
-            *pending_command = Some(cmd);
-            return true;
-        }
-        ActionKind::ShortcutOnly => {}
-    }
-    false
-}
 
 async fn run_modal_menu(
     client: HerdrClient,
