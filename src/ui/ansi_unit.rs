@@ -48,10 +48,30 @@ fn test_render_ansi_line_with_clock() {
         ..Default::default()
     };
 
+    let before = chrono::Local::now();
     let line = render_ansi_line(&state, &config);
-    let current_time = chrono::Local::now().format("%H:%M").to_string();
-    assert!(line.contains(&format!("[ {} ]", current_time)));
+    let after = chrono::Local::now();
+
+    let before_str = format!("[ {} ]", before.format("%H:%M"));
+    let after_str = format!("[ {} ]", after.format("%H:%M"));
+    assert!(
+        line.contains(&before_str) || line.contains(&after_str),
+        "Expected line to contain clock '{}' or '{}', got: {}",
+        before_str,
+        after_str,
+        line
+    );
     assert!(line.contains("\x1b[90m[ "));
+
+    let clock_start = line.find("[ ").expect("Clock open bracket not found");
+    let clock_slice = &line[clock_start..clock_start + 9];
+    assert!(clock_slice.ends_with(" ]"));
+    let time_parts: Vec<&str> = clock_slice[2..7].split(':').collect();
+    assert_eq!(time_parts.len(), 2);
+    let hour: u32 = time_parts[0].parse().expect("Valid hour digits");
+    let min: u32 = time_parts[1].parse().expect("Valid minute digits");
+    assert!(hour < 24);
+    assert!(min < 60);
 }
 
 #[test]

@@ -1,9 +1,7 @@
 use super::*;
+use crate::helpers::paths::TEST_ENV_MUTEX;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 use toml::Value as TomlValue;
-
-static CONFIG_ENV_MUTEX: Mutex<()> = Mutex::new(());
 
 struct EnvVarGuard {
     key: &'static str,
@@ -180,7 +178,7 @@ fn test_custom_navigate_hints_from_toml() {
 
 #[test]
 fn test_load_resolution_order_json_override() {
-    let _lock = CONFIG_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("load_json");
 
     let json_path = temp.path().join("status-bar.json");
@@ -224,7 +222,7 @@ fn test_load_resolution_order_json_override() {
 
 #[test]
 fn test_load_resolution_order_toml_fallback() {
-    let _lock = CONFIG_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("load_toml");
 
     let non_existent_json = temp.path().join("non_existent.json");
@@ -254,7 +252,7 @@ fn test_load_resolution_order_toml_fallback() {
 
 #[test]
 fn test_load_resolution_order_defaults_fallback() {
-    let _lock = CONFIG_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("load_defaults");
 
     let non_existent_json = temp.path().join("non_existent.json");

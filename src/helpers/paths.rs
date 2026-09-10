@@ -46,5 +46,8 @@ pub fn discover_socket() -> Option<PathBuf> {
 }
 
 #[cfg(test)]
+pub(crate) static TEST_ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+#[cfg(test)]
 #[path = "paths_unit.rs"]
 mod tests;

@@ -1,8 +1,5 @@
 use super::*;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-
-static ENV_MUTEX: Mutex<()> = Mutex::new(());
 
 struct EnvVarGuard {
     key: &'static str,
@@ -75,7 +72,7 @@ impl Drop for TempDir {
 
 #[test]
 fn test_home_dir_returns_valid_path() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("home_valid");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
 
@@ -86,7 +83,7 @@ fn test_home_dir_returns_valid_path() {
 
 #[test]
 fn test_home_dir_fallback_when_unset() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let _home_guard = EnvVarGuard::remove("HOME");
 
     let home = home_dir();
@@ -95,7 +92,7 @@ fn test_home_dir_fallback_when_unset() {
 
 #[test]
 fn test_herdr_config_path_default() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("herdr_config_default");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
     let _config_guard = EnvVarGuard::remove("HERDR_CONFIG_PATH");
@@ -106,7 +103,7 @@ fn test_herdr_config_path_default() {
 
 #[test]
 fn test_herdr_config_path_with_env() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("herdr_config_custom");
     let custom_path = temp.path().join("my_herdr_config.toml");
     let _config_guard = EnvVarGuard::set("HERDR_CONFIG_PATH", &custom_path);
@@ -116,7 +113,7 @@ fn test_herdr_config_path_with_env() {
 
 #[test]
 fn test_plugin_config_path_default() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("plugin_config_default");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
     let _plugin_guard = EnvVarGuard::remove("HERDR_STATUS_BAR_CONFIG");
@@ -127,7 +124,7 @@ fn test_plugin_config_path_default() {
 
 #[test]
 fn test_plugin_config_path_with_env() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("plugin_config_custom");
     let custom_path = temp.path().join("my_status_bar.json");
     let _plugin_guard = EnvVarGuard::set("HERDR_STATUS_BAR_CONFIG", &custom_path);
@@ -137,7 +134,7 @@ fn test_plugin_config_path_with_env() {
 
 #[test]
 fn test_discover_socket_with_herdr_socket_env_mock_socket() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("mock_socket");
     let sock_path = temp.path().join("mock.sock");
     let _listener = std::os::unix::net::UnixListener::bind(&sock_path)
@@ -149,7 +146,7 @@ fn test_discover_socket_with_herdr_socket_env_mock_socket() {
 
 #[test]
 fn test_discover_socket_with_herdr_socket_env_file() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("file_socket");
     let sock_path = temp.path().join("file.sock");
     std::fs::write(&sock_path, b"test socket file").expect("failed to create file");
@@ -160,7 +157,7 @@ fn test_discover_socket_with_herdr_socket_env_file() {
 
 #[test]
 fn test_discover_socket_env_non_existent_falls_back_to_candidates() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("socket_env_fallback");
     let non_existent = temp.path().join("non_existent.sock");
     let _socket_guard = EnvVarGuard::set("HERDR_SOCKET", &non_existent);
@@ -175,7 +172,7 @@ fn test_discover_socket_env_non_existent_falls_back_to_candidates() {
 
 #[test]
 fn test_discover_socket_fallback_candidate_herdr_dir() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("candidate_herdr_dir");
     let _socket_guard = EnvVarGuard::remove("HERDR_SOCKET");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
@@ -189,7 +186,7 @@ fn test_discover_socket_fallback_candidate_herdr_dir() {
 
 #[test]
 fn test_discover_socket_fallback_candidate_config_herdr_dir() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("candidate_config_dir");
     let _socket_guard = EnvVarGuard::remove("HERDR_SOCKET");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
@@ -203,7 +200,7 @@ fn test_discover_socket_fallback_candidate_config_herdr_dir() {
 
 #[test]
 fn test_discover_socket_fallback_candidate_order() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("candidate_order");
     let _socket_guard = EnvVarGuard::remove("HERDR_SOCKET");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
@@ -220,7 +217,7 @@ fn test_discover_socket_fallback_candidate_order() {
 
 #[test]
 fn test_discover_socket_none_when_no_socket_exists() {
-    let _lock = ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("no_socket");
     let _socket_guard = EnvVarGuard::remove("HERDR_SOCKET");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
