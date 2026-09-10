@@ -180,7 +180,10 @@ fn test_status_bar_state_serde_roundtrip_populated() {
         deserialized.active_workspace.as_deref(),
         Some("workspace-main")
     );
-    assert_eq!(deserialized.active_workspace_id.as_deref(), Some("ws-uuid-1"));
+    assert_eq!(
+        deserialized.active_workspace_id.as_deref(),
+        Some("ws-uuid-1")
+    );
     assert_eq!(
         deserialized.active_workspace_label.as_deref(),
         Some("Main Workspace")

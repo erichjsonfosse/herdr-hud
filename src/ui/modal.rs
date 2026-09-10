@@ -1,28 +1,29 @@
 use crate::client::HerdrClient;
 use crate::config::StatusBarConfig;
-use crate::palette::{get_palette_categories, trigger_action, ActionKind, ModalInputTarget, PaletteCategory};
+use crate::palette::{
+    ActionKind, ModalInputTarget, PaletteCategory, get_palette_categories, trigger_action,
+};
 use crate::state::StatusBarState;
 use crossterm::{
     event::{
-        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind,
-        KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
+        self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind, KeyModifiers,
+        MouseButton, MouseEvent, MouseEventKind,
     },
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use ratatui::{
+    Terminal,
     backend::CrosstermBackend,
     buffer::Buffer,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, BorderType, Borders, Paragraph, Widget},
-    Terminal,
 };
 use std::io::stdout;
 use std::process::Command as SysCommand;
 use std::time::Duration;
-
 
 pub struct MenuModalWidget<'a> {
     pub state: &'a StatusBarState,
@@ -73,23 +74,47 @@ impl<'a> Widget for MenuModalWidget<'a> {
         let cat_lines = vec![
             Line::from(vec![
                 Span::styled("   /\\___/\\   ", Style::default().fg(Color::White)),
-                Span::styled("  🐾 Herdr Action Palette", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "  🐾 Herdr Action Palette",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
             ]),
             Line::from(vec![
                 Span::styled("  ( ", Style::default().fg(Color::White)),
-                Span::styled("o", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "o",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled(" . ", Style::default().fg(Color::White)),
-                Span::styled("o", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "o",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled(" )  ", Style::default().fg(Color::White)),
-                Span::styled("  Select an action with keyboard or mouse to execute", Style::default().fg(Color::Gray)),
+                Span::styled(
+                    "  Select an action with keyboard or mouse to execute",
+                    Style::default().fg(Color::Gray),
+                ),
             ]),
             Line::from(vec![
                 Span::styled("  /| ", Style::default().fg(Color::White)),
                 Span::styled("░█░", Style::default().fg(Color::Cyan)),
                 Span::styled(" |\\  ", Style::default().fg(Color::White)),
-                Span::styled("  Navigate categories with [1], [2], [3] or [◄ / ►]", Style::default().fg(Color::DarkGray)),
+                Span::styled(
+                    "  Navigate categories with [1], [2], [3] or [◄ / ►]",
+                    Style::default().fg(Color::DarkGray),
+                ),
             ]),
-            Line::from(Span::styled("  (___m_m)  ", Style::default().fg(Color::White))),
+            Line::from(Span::styled(
+                "  (___m_m)  ",
+                Style::default().fg(Color::White),
+            )),
         ];
         Paragraph::new(cat_lines).render(chunks[0], buf);
 
@@ -103,9 +128,7 @@ impl<'a> Widget for MenuModalWidget<'a> {
                     .fg(Color::Black)
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default()
-                    .bg(Color::DarkGray)
-                    .fg(Color::White)
+                Style::default().bg(Color::DarkGray).fg(Color::White)
             };
 
             let label = format!("  [{}. {}]  ", cat.key_number, cat.name);
@@ -126,16 +149,44 @@ impl<'a> Widget for MenuModalWidget<'a> {
                 vec![
                     Line::from(""),
                     Line::from(vec![
-                        Span::styled("  ✨  ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
-                        Span::styled(target_type, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
-                        Span::styled(" (Optional name, press Enter for default)", Style::default().fg(Color::Gray)),
+                        Span::styled(
+                            "  ✨  ",
+                            Style::default()
+                                .fg(Color::Green)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                        Span::styled(
+                            target_type,
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                        Span::styled(
+                            " (Optional name, press Enter for default)",
+                            Style::default().fg(Color::Gray),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
-                        Span::styled("    Tab Name: [ ", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-                        Span::styled(input_buffer, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "    Tab Name: [ ",
+                            Style::default()
+                                .fg(Color::Cyan)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                        Span::styled(
+                            input_buffer,
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                         Span::styled("█", Style::default().fg(Color::Cyan)),
-                        Span::styled(" ]", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            " ]",
+                            Style::default()
+                                .fg(Color::Cyan)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(""),
                 ]
@@ -143,16 +194,44 @@ impl<'a> Widget for MenuModalWidget<'a> {
                 vec![
                     Line::from(""),
                     Line::from(vec![
-                        Span::styled("  ✏️  Rename ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
-                        Span::styled(target_type, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
-                        Span::styled(format!(" (Current: \"{}\")", current_name), Style::default().fg(Color::Gray)),
+                        Span::styled(
+                            "  ✏️  Rename ",
+                            Style::default()
+                                .fg(Color::Yellow)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                        Span::styled(
+                            target_type,
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                        Span::styled(
+                            format!(" (Current: \"{}\")", current_name),
+                            Style::default().fg(Color::Gray),
+                        ),
                     ]),
                     Line::from(""),
                     Line::from(vec![
-                        Span::styled("    New Name: [ ", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-                        Span::styled(input_buffer, Style::default().fg(Color::White).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            "    New Name: [ ",
+                            Style::default()
+                                .fg(Color::Cyan)
+                                .add_modifier(Modifier::BOLD),
+                        ),
+                        Span::styled(
+                            input_buffer,
+                            Style::default()
+                                .fg(Color::White)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                         Span::styled("█", Style::default().fg(Color::Cyan)),
-                        Span::styled(" ]", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                        Span::styled(
+                            " ]",
+                            Style::default()
+                                .fg(Color::Cyan)
+                                .add_modifier(Modifier::BOLD),
+                        ),
                     ]),
                     Line::from(""),
                 ]
@@ -176,26 +255,58 @@ impl<'a> Widget for MenuModalWidget<'a> {
 
                 let pointer = if is_selected { " ▶ " } else { "   " };
                 let exec_badge = match action.kind {
-                    ActionKind::DirectCommand | ActionKind::SplitVertical | ActionKind::SplitHorizontal | ActionKind::ToggleZoom => {
-                        Span::styled(" [Execute ↵] ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
-                    }
-                    ActionKind::PromptCreateTab => {
-                        Span::styled(" [Create ↵]  ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD))
-                    }
-                    ActionKind::CloseActiveWorkspace | ActionKind::CloseActiveTab | ActionKind::CloseActivePane => {
-                        Span::styled(" [Close ↵]   ", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD))
-                    }
+                    ActionKind::DirectCommand
+                    | ActionKind::SplitVertical
+                    | ActionKind::SplitHorizontal
+                    | ActionKind::ToggleZoom => Span::styled(
+                        " [Execute ↵] ",
+                        Style::default()
+                            .fg(Color::Green)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    ActionKind::PromptCreateTab => Span::styled(
+                        " [Create ↵]  ",
+                        Style::default()
+                            .fg(Color::Green)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    ActionKind::CloseActiveWorkspace
+                    | ActionKind::CloseActiveTab
+                    | ActionKind::CloseActivePane => Span::styled(
+                        " [Close ↵]   ",
+                        Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                    ),
                     ActionKind::PromptRenameWorkspace | ActionKind::PromptRenameTab => {
-                        Span::styled(" [Rename ↵]  ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
+                        Span::styled(
+                            " [Rename ↵]  ",
+                            Style::default()
+                                .fg(Color::Yellow)
+                                .add_modifier(Modifier::BOLD),
+                        )
                     }
-                    ActionKind::ShortcutOnly => Span::styled(" [Shortcut]  ", Style::default().fg(Color::DarkGray)),
+                    ActionKind::ShortcutOnly => {
+                        Span::styled(" [Shortcut]  ", Style::default().fg(Color::DarkGray))
+                    }
                 };
 
                 let line = Line::from(vec![
-                    Span::styled(pointer, Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-                    Span::styled(format!("{:<16} ", format!("<{}>", action.key)), Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                    Span::styled(
+                        pointer,
+                        Style::default()
+                            .fg(Color::Cyan)
+                            .add_modifier(Modifier::BOLD),
+                    ),
+                    Span::styled(
+                        format!("{:<16} ", format!("<{}>", action.key)),
+                        Style::default()
+                            .fg(Color::Cyan)
+                            .add_modifier(Modifier::BOLD),
+                    ),
                     Span::styled(format!("{:<20} ", action.name), row_style),
-                    Span::styled(format!("{:<38} ", action.description), Style::default().fg(Color::Gray)),
+                    Span::styled(
+                        format!("{:<38} ", action.description),
+                        Style::default().fg(Color::Gray),
+                    ),
                     exec_badge,
                 ]);
 
@@ -208,20 +319,50 @@ impl<'a> Widget for MenuModalWidget<'a> {
         // 4. Footer Guidance
         let footer_spans = if self.prompt_data.is_some() {
             vec![
-                Span::styled(" [Enter] ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    " [Enter] ",
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled("Confirm  │", Style::default().fg(Color::DarkGray)),
-                Span::styled(" [Esc] ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    " [Esc] ",
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled("Cancel", Style::default().fg(Color::DarkGray)),
             ]
         } else {
             vec![
-                Span::styled(" [▲/▼ or j/k] ", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    " [▲/▼ or j/k] ",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled("Select Action  │", Style::default().fg(Color::DarkGray)),
-                Span::styled(" [1/2/3 or ◄/►] ", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    " [1/2/3 or ◄/►] ",
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled("Category  │", Style::default().fg(Color::DarkGray)),
-                Span::styled(" [Enter / Click] ", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    " [Enter / Click] ",
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled("Execute  │", Style::default().fg(Color::DarkGray)),
-                Span::styled(" [Esc / q] ", Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    " [Esc / q] ",
+                    Style::default()
+                        .fg(Color::Yellow)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::styled("Close", Style::default().fg(Color::DarkGray)),
             ]
         };
@@ -269,18 +410,14 @@ pub async fn run_modal_menu(
 
         let prompt_data = input_target.map(|target| {
             let (target_label, current_label) = match target {
-                ModalInputTarget::CreateTab => (
-                    "Create New Tab",
-                    "",
-                ),
+                ModalInputTarget::CreateTab => ("Create New Tab", ""),
                 ModalInputTarget::RenameWorkspace => (
                     "Workspace",
                     state.active_workspace_label.as_deref().unwrap_or(""),
                 ),
-                ModalInputTarget::RenameTab => (
-                    "Tab",
-                    state.active_tab_label.as_deref().unwrap_or(""),
-                ),
+                ModalInputTarget::RenameTab => {
+                    ("Tab", state.active_tab_label.as_deref().unwrap_or(""))
+                }
             };
             (target_label, current_label, input_buffer.as_str())
         });
@@ -314,54 +451,52 @@ pub async fn run_modal_menu(
                                 input_target = None;
                                 input_buffer.clear();
                             }
-                            KeyCode::Enter => {
-                                match target {
-                                    ModalInputTarget::CreateTab => {
-                                        let mut cmd = vec![
-                                            "herdr".to_string(),
-                                            "tab".to_string(),
-                                            "create".to_string(),
-                                            "--focus".to_string(),
-                                        ];
-                                        if !input_buffer.trim().is_empty() {
-                                            cmd.push("--label".to_string());
-                                            cmd.push(input_buffer.trim().to_string());
-                                        }
-                                        pending_command = Some(cmd);
-                                        break;
+                            KeyCode::Enter => match target {
+                                ModalInputTarget::CreateTab => {
+                                    let mut cmd = vec![
+                                        "herdr".to_string(),
+                                        "tab".to_string(),
+                                        "create".to_string(),
+                                        "--focus".to_string(),
+                                    ];
+                                    if !input_buffer.trim().is_empty() {
+                                        cmd.push("--label".to_string());
+                                        cmd.push(input_buffer.trim().to_string());
                                     }
-                                    ModalInputTarget::RenameWorkspace => {
-                                        if !input_buffer.trim().is_empty() {
-                                            if let Some(ws_id) = &state.active_workspace_id {
-                                                pending_command = Some(vec![
-                                                    "herdr".to_string(),
-                                                    "workspace".to_string(),
-                                                    "rename".to_string(),
-                                                    ws_id.clone(),
-                                                    input_buffer.trim().to_string(),
-                                                ]);
-                                                break;
-                                            }
-                                        }
-                                        input_target = None;
-                                    }
-                                    ModalInputTarget::RenameTab => {
-                                        if !input_buffer.trim().is_empty() {
-                                            if let Some(tab_id) = &state.active_tab_id {
-                                                pending_command = Some(vec![
-                                                    "herdr".to_string(),
-                                                    "tab".to_string(),
-                                                    "rename".to_string(),
-                                                    tab_id.clone(),
-                                                    input_buffer.trim().to_string(),
-                                                ]);
-                                                break;
-                                            }
-                                        }
-                                        input_target = None;
-                                    }
+                                    pending_command = Some(cmd);
+                                    break;
                                 }
-                            }
+                                ModalInputTarget::RenameWorkspace => {
+                                    if !input_buffer.trim().is_empty() {
+                                        if let Some(ws_id) = &state.active_workspace_id {
+                                            pending_command = Some(vec![
+                                                "herdr".to_string(),
+                                                "workspace".to_string(),
+                                                "rename".to_string(),
+                                                ws_id.clone(),
+                                                input_buffer.trim().to_string(),
+                                            ]);
+                                            break;
+                                        }
+                                    }
+                                    input_target = None;
+                                }
+                                ModalInputTarget::RenameTab => {
+                                    if !input_buffer.trim().is_empty() {
+                                        if let Some(tab_id) = &state.active_tab_id {
+                                            pending_command = Some(vec![
+                                                "herdr".to_string(),
+                                                "tab".to_string(),
+                                                "rename".to_string(),
+                                                tab_id.clone(),
+                                                input_buffer.trim().to_string(),
+                                            ]);
+                                            break;
+                                        }
+                                    }
+                                    input_target = None;
+                                }
+                            },
                             KeyCode::Backspace => {
                                 input_buffer.pop();
                             }
@@ -407,7 +542,8 @@ pub async fn run_modal_menu(
                                 if active_action_idx > 0 {
                                     active_action_idx -= 1;
                                 } else {
-                                    active_action_idx = categories[active_cat_idx].actions.len().saturating_sub(1);
+                                    active_action_idx =
+                                        categories[active_cat_idx].actions.len().saturating_sub(1);
                                 }
                             }
                             KeyCode::Down | KeyCode::Char('j') => {
@@ -432,7 +568,9 @@ pub async fn run_modal_menu(
                         }
                     }
                 }
-                Event::Mouse(MouseEvent { kind, column, row, .. }) => {
+                Event::Mouse(MouseEvent {
+                    kind, column, row, ..
+                }) => {
                     if input_target.is_none() {
                         match kind {
                             MouseEventKind::ScrollDown => {
@@ -445,7 +583,8 @@ pub async fn run_modal_menu(
                                 if active_action_idx > 0 {
                                     active_action_idx -= 1;
                                 } else {
-                                    active_action_idx = categories[active_cat_idx].actions.len().saturating_sub(1);
+                                    active_action_idx =
+                                        categories[active_cat_idx].actions.len().saturating_sub(1);
                                 }
                             }
                             MouseEventKind::Down(MouseButton::Left) => {
@@ -469,7 +608,8 @@ pub async fn run_modal_menu(
                                     let total_actions = categories[active_cat_idx].actions.len();
                                     if clicked_idx < total_actions {
                                         active_action_idx = clicked_idx;
-                                        let action = &categories[active_cat_idx].actions[active_action_idx];
+                                        let action =
+                                            &categories[active_cat_idx].actions[active_action_idx];
                                         if trigger_action(
                                             action,
                                             &state,
@@ -513,4 +653,3 @@ pub async fn run_modal_menu(
 
     Ok(())
 }
-

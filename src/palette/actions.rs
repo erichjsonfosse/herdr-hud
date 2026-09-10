@@ -51,7 +51,11 @@ pub fn get_palette_categories(config: &StatusBarConfig) -> Vec<PaletteCategory> 
                     key: format!("{} Shift+N", p),
                     description: "Create and switch to a new workspace",
                     kind: ActionKind::DirectCommand,
-                    command: Some(vec!["herdr".to_string(), "workspace".to_string(), "create".to_string()]),
+                    command: Some(vec![
+                        "herdr".to_string(),
+                        "workspace".to_string(),
+                        "create".to_string(),
+                    ]),
                 },
                 PaletteAction {
                     name: "Rename Workspace",

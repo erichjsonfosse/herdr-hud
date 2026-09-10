@@ -1,5 +1,5 @@
 pub mod actions;
 pub use actions::{
-    get_palette_categories, trigger_action, ActionKind, ModalInputTarget, PaletteAction,
-    PaletteCategory,
+    ActionKind, ModalInputTarget, PaletteAction, PaletteCategory, get_palette_categories,
+    trigger_action,
 };

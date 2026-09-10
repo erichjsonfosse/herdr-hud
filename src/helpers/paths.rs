@@ -31,10 +31,9 @@ pub fn discover_socket() -> Option<PathBuf> {
     let candidates = [
         home.join(".herdr/herdr.sock"),
         home.join(".config/herdr/herdr.sock"),
-        PathBuf::from(format!(
-            "/run/user/{}/herdr/herdr.sock",
-            unsafe { libc::getuid() }
-        )),
+        PathBuf::from(format!("/run/user/{}/herdr/herdr.sock", unsafe {
+            libc::getuid()
+        })),
         PathBuf::from(format!("/tmp/herdr-{}.sock", unsafe { libc::getuid() })),
     ];
 

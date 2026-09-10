@@ -37,7 +37,12 @@ pub fn render_ansi_line(state: &StatusBarState, config: &StatusBarConfig) -> Str
                 AgentStatus::Idle => "\x1b[90m○\x1b[0m",
                 AgentStatus::Unknown => "\x1b[90m?\x1b[0m",
             };
-            agent_str.push_str(&format!(" {} {}: {}", sym, agent.agent_name, agent.status.text()));
+            agent_str.push_str(&format!(
+                " {} {}: {}",
+                sym,
+                agent.agent_name,
+                agent.status.text()
+            ));
         }
     }
 

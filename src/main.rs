@@ -4,7 +4,6 @@ use herdr_status_bar::config::StatusBarConfig;
 use herdr_status_bar::state::StatusBarState;
 use herdr_status_bar::ui::{render_ansi_line, run_modal_menu, run_tui_loop};
 
-
 #[derive(Parser)]
 #[command(name = "herdr-status-bar")]
 #[command(about = "Context-based Zellij-inspired status bar for Herdr")]
@@ -24,7 +23,6 @@ enum Commands {
     /// Test Herdr socket connection and show active snapshot
     Check,
 }
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -50,7 +48,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 None => println!("  [!] No active Herdr socket found on system"),
             }
             if let Some(snapshot) = client.fetch_snapshot_sync() {
-                println!("  [✔] Snapshot received:\n{}", serde_json::to_string_pretty(&snapshot)?);
+                println!(
+                    "  [✔] Snapshot received:\n{}",
+                    serde_json::to_string_pretty(&snapshot)?
+                );
             } else {
                 println!("  [!] Could not fetch live snapshot from Herdr");
             }
@@ -62,4 +63,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-

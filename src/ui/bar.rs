@@ -5,20 +5,19 @@ use chrono::Local;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
     execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
+    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
 use ratatui::{
+    Terminal,
     backend::CrosstermBackend,
     buffer::Buffer,
     layout::Rect,
     style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Paragraph, Widget},
-    Terminal,
 };
 use std::io::stdout;
 use std::time::Duration;
-
 
 pub struct StatusBarWidget<'a> {
     pub state: &'a StatusBarState,
@@ -193,4 +192,3 @@ pub async fn run_tui_loop(
 
     Ok(())
 }
-

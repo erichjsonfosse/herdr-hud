@@ -34,7 +34,11 @@ pub fn format_key_token(token: &str) -> String {
 }
 
 pub fn format_key_chord(chord: &str) -> String {
-    let parts: Vec<&str> = chord.split('+').map(|s| s.trim()).filter(|s| !s.is_empty()).collect();
+    let parts: Vec<&str> = chord
+        .split('+')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
     if parts.is_empty() {
         return chord.to_string();
     }

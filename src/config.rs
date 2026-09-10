@@ -54,7 +54,10 @@ impl StatusBarConfig {
     pub fn from_herdr_config(config: Option<&TomlValue>) -> Self {
         // Herdr default prefix is "ctrl+b"
         let raw_prefix = config
-            .and_then(|c| c.get("prefix").or_else(|| c.get("keys").and_then(|k| k.get("prefix"))))
+            .and_then(|c| {
+                c.get("prefix")
+                    .or_else(|| c.get("keys").and_then(|k| k.get("prefix")))
+            })
             .and_then(|v| v.as_str())
             .unwrap_or("ctrl+b");
 
@@ -168,4 +171,3 @@ impl StatusBarConfig {
 #[cfg(test)]
 #[path = "config_unit.rs"]
 mod tests;
-

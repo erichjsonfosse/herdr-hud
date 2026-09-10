@@ -75,7 +75,10 @@ impl HerdrClient {
         // Match focused workspace in workspaces array
         if let Some(workspaces) = session.get("workspaces").and_then(|v| v.as_array()) {
             for ws in workspaces {
-                let id = ws.get("workspace_id").and_then(|v| v.as_str()).unwrap_or("");
+                let id = ws
+                    .get("workspace_id")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
                 let is_focused = ws.get("focused").and_then(|v| v.as_bool()).unwrap_or(false)
                     || focused_ws_id.as_deref() == Some(id);
 
@@ -102,7 +105,10 @@ impl HerdrClient {
         if let Some(tabs) = session.get("tabs").and_then(|v| v.as_array()) {
             for tab in tabs {
                 let id = tab.get("tab_id").and_then(|v| v.as_str()).unwrap_or("");
-                let is_focused = tab.get("focused").and_then(|v| v.as_bool()).unwrap_or(false)
+                let is_focused = tab
+                    .get("focused")
+                    .and_then(|v| v.as_bool())
+                    .unwrap_or(false)
                     || focused_tab_id.as_deref() == Some(id);
 
                 if is_focused {

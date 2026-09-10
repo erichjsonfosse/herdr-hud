@@ -636,4 +636,3 @@ fn test_trigger_action_all_catalog_actions() {
         }
     }
 }
-

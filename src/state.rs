@@ -102,4 +102,3 @@ impl StatusBarState {
 #[cfg(test)]
 #[path = "state_unit.rs"]
 mod tests;
-
