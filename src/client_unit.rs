@@ -180,3 +180,28 @@ fn test_snapshot_tab_fallback_when_tab_not_found_in_array() {
     assert_eq!(state.active_tab_id.as_deref(), Some("tab-orphan"));
     assert_eq!(state.active_tab.as_deref(), Some("tab-orphan"));
 }
+
+#[test]
+fn test_parse_snapshot_bytes_valid() {
+    let json_bytes = b"{\"result\": {\"snapshot\": {\"focused_workspace_id\": \"w1\"}}}";
+    let val = HerdrClient::parse_snapshot_bytes(json_bytes);
+    assert!(val.is_some());
+    assert_eq!(
+        val.unwrap().pointer("/result/snapshot/focused_workspace_id").and_then(|v| v.as_str()),
+        Some("w1")
+    );
+}
+
+#[test]
+fn test_parse_snapshot_bytes_invalid_json() {
+    let bad_bytes = b"not valid json {{{";
+    let val = HerdrClient::parse_snapshot_bytes(bad_bytes);
+    assert!(val.is_none());
+}
+
+#[test]
+fn test_parse_snapshot_bytes_non_utf8() {
+    let non_utf8 = &[0xFF, 0xFE, 0xFD];
+    let val = HerdrClient::parse_snapshot_bytes(non_utf8);
+    assert!(val.is_none());
+}

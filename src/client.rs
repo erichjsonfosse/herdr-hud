@@ -21,6 +21,10 @@ impl HerdrClient {
         discover_socket()
     }
 
+    pub(crate) fn parse_snapshot_bytes(bytes: &[u8]) -> Option<Value> {
+        serde_json::from_slice(bytes).ok()
+    }
+
     pub fn fetch_snapshot_sync(&self) -> Option<Value> {
         let output = Command::new("herdr")
             .args(["api", "snapshot"])
@@ -28,8 +32,7 @@ impl HerdrClient {
             .ok()?;
 
         if output.status.success() {
-            let stdout = String::from_utf8_lossy(&output.stdout);
-            serde_json::from_str(&stdout).ok()
+            Self::parse_snapshot_bytes(&output.stdout)
         } else {
             None
         }
@@ -43,24 +46,13 @@ impl HerdrClient {
             .or_else(|| snapshot.get("data").and_then(|d| d.get("session_snapshot")))
             .unwrap_or(snapshot);
 
-        // Extract focused IDs directly from session snapshot
-        let focused_ws_id = session
-            .get("focused_workspace_id")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string());
+        // Extract focused IDs directly from session snapshot as borrowed references
+        let focused_ws_id = session.get("focused_workspace_id").and_then(|v| v.as_str());
+        let focused_tab_id = session.get("focused_tab_id").and_then(|v| v.as_str());
+        let focused_pane_id = session.get("focused_pane_id").and_then(|v| v.as_str());
 
-        let focused_tab_id = session
-            .get("focused_tab_id")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string());
-
-        let focused_pane_id = session
-            .get("focused_pane_id")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string());
-
-        if let Some(ref pane_id) = focused_pane_id {
-            state.active_pane = Some(pane_id.clone());
+        if let Some(pane_id) = focused_pane_id {
+            state.active_pane = Some(pane_id.to_string());
         }
 
         // Match focused workspace in workspaces array
@@ -71,7 +63,7 @@ impl HerdrClient {
                     .and_then(|v| v.as_str())
                     .unwrap_or("");
                 let is_focused = ws.get("focused").and_then(|v| v.as_bool()).unwrap_or(false)
-                    || focused_ws_id.as_deref() == Some(id);
+                    || focused_ws_id == Some(id);
 
                 if is_focused {
                     let label = ws.get("label").and_then(|v| v.as_str()).unwrap_or(id);
@@ -84,10 +76,10 @@ impl HerdrClient {
 
         // Fallback for workspace if not found in array
         if state.active_workspace_id.is_none()
-            && let Some(ref ws_id) = focused_ws_id
+            && let Some(ws_id) = focused_ws_id
         {
-            state.active_workspace_id = Some(ws_id.clone());
-            state.active_workspace = Some(ws_id.clone());
+            state.active_workspace_id = Some(ws_id.to_string());
+            state.active_workspace = Some(ws_id.to_string());
         }
 
         // Match focused tab in tabs array
@@ -98,7 +90,7 @@ impl HerdrClient {
                     .get("focused")
                     .and_then(|v| v.as_bool())
                     .unwrap_or(false)
-                    || focused_tab_id.as_deref() == Some(id);
+                    || focused_tab_id == Some(id);
 
                 if is_focused {
                     let label = tab.get("label").and_then(|v| v.as_str()).unwrap_or(id);
@@ -111,10 +103,10 @@ impl HerdrClient {
 
         // Fallback for tab if not found in array
         if state.active_tab_id.is_none()
-            && let Some(ref tab_id) = focused_tab_id
+            && let Some(tab_id) = focused_tab_id
         {
-            state.active_tab_id = Some(tab_id.clone());
-            state.active_tab = Some(tab_id.clone());
+            state.active_tab_id = Some(tab_id.to_string());
+            state.active_tab = Some(tab_id.to_string());
         }
     }
 }
