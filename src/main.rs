@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use herdr_status_bar::client::HerdrClient;
 use herdr_status_bar::config::StatusBarConfig;
 use herdr_status_bar::state::StatusBarState;
-use herdr_status_bar::ui::{render_ansi_line, run_modal_menu, run_tui_loop};
+use herdr_status_bar::ui::{render_ansi_line, run_modal_menu};
 
 #[derive(Parser)]
 #[command(name = "herdr-status-bar")]
@@ -14,8 +14,6 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Run the interactive full-width bottom status bar
-    Run,
     /// Print a single ANSI-formatted status line (useful for tab bar or external scripts)
     Line,
     /// Open the interactive Command Palette & Shortcut Reference modal popup
@@ -30,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = StatusBarConfig::load();
     let client = HerdrClient::new();
 
-    match cli.command.unwrap_or(Commands::Run) {
+    match cli.command.unwrap_or(Commands::Line) {
         Commands::Line => {
             let mut state = StatusBarState::new();
             if let Some(snapshot) = client.fetch_snapshot_sync() {
@@ -56,10 +54,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 println!("  [!] Could not fetch live snapshot from Herdr");
             }
         }
-        Commands::Run => {
-            run_tui_loop(client, config).await?;
-        }
     }
 
     Ok(())
 }
+
