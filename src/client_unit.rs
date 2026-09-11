@@ -187,7 +187,9 @@ fn test_parse_snapshot_bytes_valid() {
     let val = HerdrClient::parse_snapshot_bytes(json_bytes);
     assert!(val.is_some());
     assert_eq!(
-        val.unwrap().pointer("/result/snapshot/focused_workspace_id").and_then(|v| v.as_str()),
+        val.unwrap()
+            .pointer("/result/snapshot/focused_workspace_id")
+            .and_then(|v| v.as_str()),
         Some("w1")
     );
 }

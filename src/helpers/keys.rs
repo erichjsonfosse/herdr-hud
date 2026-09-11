@@ -36,10 +36,7 @@ pub fn format_key_token(token: &str) -> Cow<'static, str> {
 }
 
 pub fn format_key_chord(chord: &str) -> String {
-    let mut parts = chord
-        .split('+')
-        .map(|s| s.trim())
-        .filter(|s| !s.is_empty());
+    let mut parts = chord.split('+').map(|s| s.trim()).filter(|s| !s.is_empty());
 
     let first = match parts.next() {
         Some(first) => first,
