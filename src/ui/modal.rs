@@ -23,6 +23,60 @@ use std::io::stdout;
 use std::process::Command as SysCommand;
 use std::time::Duration;
 
+pub(crate) fn format_action_description(desc: &str, max_width: usize) -> String {
+    if max_width == 0 {
+        return String::new();
+    }
+    let char_count = desc.chars().count();
+    if char_count > max_width {
+        if max_width > 3 {
+            let mut s: String = desc.chars().take(max_width - 3).collect();
+            s.push_str("...");
+            format!("{:<width$} ", s, width = max_width)
+        } else {
+            let s: String = desc.chars().take(max_width).collect();
+            format!("{:<width$} ", s, width = max_width)
+        }
+    } else {
+        format!("{:<width$} ", desc, width = max_width)
+    }
+}
+
+pub(crate) fn hit_test_category_tab(
+    column: u16,
+    row: u16,
+    categories: &[PaletteCategory],
+) -> Option<usize> {
+    let area_y = 1;
+    let cat_tabs_y = area_y + 5;
+    if row >= cat_tabs_y && row < cat_tabs_y + 3 {
+        let mut current_col = 1u16;
+        for (i, cat) in categories.iter().enumerate() {
+            let tab_len = format!("  [{}. {}]  ", cat.key_number, cat.name)
+                .chars()
+                .count() as u16;
+            if column >= current_col && column < current_col + tab_len {
+                return Some(i);
+            }
+            current_col += tab_len + 2;
+        }
+    }
+    None
+}
+
+pub(crate) fn hit_test_action_item(row: u16, total_actions: usize) -> Option<usize> {
+    let area_y = 1;
+    let cat_tabs_y = area_y + 5;
+    let action_list_y_start = cat_tabs_y + 3;
+    if row >= action_list_y_start {
+        let clicked_idx = (row - action_list_y_start) as usize;
+        if clicked_idx < total_actions {
+            return Some(clicked_idx);
+        }
+    }
+    None
+}
+
 pub struct MenuModalWidget<'a> {
     pub state: &'a StatusBarState,
     pub categories: &'a [PaletteCategory],
@@ -287,6 +341,7 @@ impl<'a> Widget for MenuModalWidget<'a> {
                     }
                 };
 
+                let max_desc_width = (chunks[2].width.saturating_sub(55) as usize).min(40);
                 let line = Line::from(vec![
                     Span::styled(
                         pointer,
@@ -302,7 +357,7 @@ impl<'a> Widget for MenuModalWidget<'a> {
                     ),
                     Span::styled(format!("{:<20} ", action.name), row_style),
                     Span::styled(
-                        format!("{:<38} ", action.description),
+                        format_action_description(action.description, max_desc_width),
                         Style::default().fg(Color::Gray),
                     ),
                     exec_badge,
@@ -404,141 +459,139 @@ pub fn run_modal_menu(
         let mut input_target: Option<ModalInputTarget> = None;
         let mut input_buffer = String::new();
 
+        let mut dirty = true;
         loop {
-            let terminal_size = terminal.size()?;
-
-            let prompt_data = input_target.map(|target| {
-                let (target_label, current_label) = match target {
-                    ModalInputTarget::CreateTab => ("Create New Tab", ""),
-                    ModalInputTarget::RenameWorkspace => (
-                        "Workspace",
-                        state.active_workspace.as_deref().unwrap_or(""),
-                    ),
-                    ModalInputTarget::RenameTab => {
-                        ("Tab", state.active_tab.as_deref().unwrap_or(""))
-                    }
-                };
-                (target_label, current_label, input_buffer.as_str())
-            });
-
-            terminal.draw(|f| {
-                let size = f.area();
-                f.render_widget(
-                    MenuModalWidget {
-                        state: &state,
-                        categories: &categories,
-                        active_category_idx: active_cat_idx,
-                        active_action_idx,
-                        prompt_data,
-                    },
-                    size,
-                );
-            })?;
-
-            if event::poll(Duration::from_millis(100))? {
-                match event::read()? {
-                    Event::Key(key) => {
-                        // Ignore key release events
-                        if key.kind == KeyEventKind::Release {
-                            continue;
+            if dirty {
+                let prompt_data = input_target.map(|target| {
+                    let (target_label, current_label) = match target {
+                        ModalInputTarget::CreateTab => ("Create New Tab", ""),
+                        ModalInputTarget::RenameWorkspace => {
+                            ("Workspace", state.active_workspace.as_deref().unwrap_or(""))
                         }
+                        ModalInputTarget::RenameTab => {
+                            ("Tab", state.active_tab.as_deref().unwrap_or(""))
+                        }
+                    };
+                    (target_label, current_label, input_buffer.as_str())
+                });
 
-                        if let Some(target) = input_target {
-                            // In interactive text prompt mode
-                            match key.code {
-                                KeyCode::Esc => {
-                                    input_target = None;
-                                    input_buffer.clear();
-                                }
-                                KeyCode::Enter => {
-                                    if let Some(cmd) =
-                                        build_prompt_command(&target, &input_buffer, &state)
-                                    {
-                                        pending_command = Some(cmd);
-                                        break;
-                                    } else {
-                                        input_target = None;
-                                    }
-                                }
-                                KeyCode::Backspace => {
-                                    input_buffer.pop();
-                                }
-                                KeyCode::Char(c) => {
-                                    input_buffer.push(c);
-                                }
-                                _ => {}
+                terminal.draw(|f| {
+                    let size = f.area();
+                    f.render_widget(
+                        MenuModalWidget {
+                            state: &state,
+                            categories: &categories,
+                            active_category_idx: active_cat_idx,
+                            active_action_idx,
+                            prompt_data,
+                        },
+                        size,
+                    );
+                })?;
+                dirty = false;
+            }
+
+            match event::read()? {
+                Event::Key(key) => {
+                    // Ignore key release events
+                    if key.kind == KeyEventKind::Release {
+                        continue;
+                    }
+                    dirty = true;
+
+                    if let Some(target) = input_target {
+                        // In interactive text prompt mode
+                        match key.code {
+                            KeyCode::Esc => {
+                                input_target = None;
+                                input_buffer.clear();
                             }
-                        } else {
-                            // Normal menu navigation mode
-                            match key.code {
-                                KeyCode::Char('q') | KeyCode::Esc => {
-                                    break;
-                                }
-                                KeyCode::Char('c')
-                                    if key.modifiers.contains(KeyModifiers::CONTROL) =>
+                            KeyCode::Enter => {
+                                if let Some(cmd) =
+                                    build_prompt_command(&target, &input_buffer, &state)
                                 {
+                                    pending_command = Some(cmd);
+                                    break;
+                                } else {
+                                    input_target = None;
+                                }
+                            }
+                            KeyCode::Backspace => {
+                                input_buffer.pop();
+                            }
+                            KeyCode::Char(c) => {
+                                input_buffer.push(c);
+                            }
+                            _ => {}
+                        }
+                    } else {
+                        // Normal menu navigation mode
+                        match key.code {
+                            KeyCode::Char('q') | KeyCode::Esc => {
+                                break;
+                            }
+                            KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                                break;
+                            }
+                            KeyCode::Char('1') => {
+                                active_cat_idx = 0;
+                                active_action_idx = 0;
+                            }
+                            KeyCode::Char('2') => {
+                                active_cat_idx = 1;
+                                active_action_idx = 0;
+                            }
+                            KeyCode::Char('3') => {
+                                active_cat_idx = 2;
+                                active_action_idx = 0;
+                            }
+                            KeyCode::Left | KeyCode::BackTab => {
+                                if active_cat_idx > 0 {
+                                    active_cat_idx -= 1;
+                                } else {
+                                    active_cat_idx = categories.len() - 1;
+                                }
+                                active_action_idx = 0;
+                            }
+                            KeyCode::Right | KeyCode::Tab => {
+                                active_cat_idx = (active_cat_idx + 1) % categories.len();
+                                active_action_idx = 0;
+                            }
+                            KeyCode::Up | KeyCode::Char('k') => {
+                                if active_action_idx > 0 {
+                                    active_action_idx -= 1;
+                                } else {
+                                    active_action_idx =
+                                        categories[active_cat_idx].actions.len().saturating_sub(1);
+                                }
+                            }
+                            KeyCode::Down | KeyCode::Char('j') => {
+                                let total = categories[active_cat_idx].actions.len();
+                                if total > 0 {
+                                    active_action_idx = (active_action_idx + 1) % total;
+                                }
+                            }
+                            KeyCode::Enter => {
+                                let action = &categories[active_cat_idx].actions[active_action_idx];
+                                if trigger_action(
+                                    action,
+                                    &state,
+                                    &mut input_target,
+                                    &mut input_buffer,
+                                    &mut pending_command,
+                                ) {
                                     break;
                                 }
-                                KeyCode::Char('1') => {
-                                    active_cat_idx = 0;
-                                    active_action_idx = 0;
-                                }
-                                KeyCode::Char('2') => {
-                                    active_cat_idx = 1;
-                                    active_action_idx = 0;
-                                }
-                                KeyCode::Char('3') => {
-                                    active_cat_idx = 2;
-                                    active_action_idx = 0;
-                                }
-                                KeyCode::Left | KeyCode::BackTab => {
-                                    if active_cat_idx > 0 {
-                                        active_cat_idx -= 1;
-                                    } else {
-                                        active_cat_idx = categories.len() - 1;
-                                    }
-                                    active_action_idx = 0;
-                                }
-                                KeyCode::Right | KeyCode::Tab => {
-                                    active_cat_idx = (active_cat_idx + 1) % categories.len();
-                                    active_action_idx = 0;
-                                }
-                                KeyCode::Up | KeyCode::Char('k') => {
-                                    if active_action_idx > 0 {
-                                        active_action_idx -= 1;
-                                    } else {
-                                        active_action_idx = categories[active_cat_idx]
-                                            .actions
-                                            .len()
-                                            .saturating_sub(1);
-                                    }
-                                }
-                                KeyCode::Down | KeyCode::Char('j') => {
-                                    let total = categories[active_cat_idx].actions.len();
-                                    if total > 0 {
-                                        active_action_idx = (active_action_idx + 1) % total;
-                                    }
-                                }
-                                KeyCode::Enter => {
-                                    let action =
-                                        &categories[active_cat_idx].actions[active_action_idx];
-                                    if trigger_action(
-                                        action,
-                                        &state,
-                                        &mut input_target,
-                                        &mut input_buffer,
-                                        &mut pending_command,
-                                    ) {
-                                        break;
-                                    }
-                                }
-                                _ => {}
                             }
+                            _ => {}
                         }
                     }
-                    Event::Mouse(MouseEvent {
-                        kind, column, row, ..
-                    }) if input_target.is_none() => match kind {
+                }
+                Event::Mouse(MouseEvent {
+                    kind, column, row, ..
+                }) if input_target.is_none() => {
+                    dirty = true;
+                    match kind {
                         MouseEventKind::ScrollDown => {
                             let total = categories[active_cat_idx].actions.len();
                             if total > 0 {
@@ -554,25 +607,13 @@ pub fn run_modal_menu(
                             }
                         }
                         MouseEventKind::Down(MouseButton::Left) => {
-                            let area_y = 1;
-                            let cat_tabs_y = area_y + 5;
-                            let action_list_y_start = cat_tabs_y + 3;
-
-                            if row >= cat_tabs_y && row < cat_tabs_y + 3 {
-                                if column < terminal_size.width / 3 {
-                                    active_cat_idx = 0;
-                                    active_action_idx = 0;
-                                } else if column < (terminal_size.width * 2) / 3 {
-                                    active_cat_idx = 1;
-                                    active_action_idx = 0;
-                                } else {
-                                    active_cat_idx = 2;
-                                    active_action_idx = 0;
-                                }
-                            } else if row >= action_list_y_start {
-                                let clicked_idx = (row - action_list_y_start) as usize;
+                            if let Some(cat_idx) = hit_test_category_tab(column, row, &categories) {
+                                active_cat_idx = cat_idx;
+                                active_action_idx = 0;
+                            } else {
                                 let total_actions = categories[active_cat_idx].actions.len();
-                                if clicked_idx < total_actions {
+                                if let Some(clicked_idx) = hit_test_action_item(row, total_actions)
+                                {
                                     active_action_idx = clicked_idx;
                                     let action =
                                         &categories[active_cat_idx].actions[active_action_idx];
@@ -589,9 +630,12 @@ pub fn run_modal_menu(
                             }
                         }
                         _ => {}
-                    },
-                    _ => {}
+                    }
                 }
+                Event::Resize(_, _) => {
+                    dirty = true;
+                }
+                _ => {}
             }
         }
     }
@@ -609,3 +653,7 @@ pub fn run_modal_menu(
 
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "modal_unit.rs"]
+mod tests;
