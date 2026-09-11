@@ -163,11 +163,27 @@ fn test_discover_socket_fallback_candidate_order() {
 }
 
 #[test]
+fn test_discover_socket_xdg_runtime_dir() {
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = TempDir::new("xdg_socket");
+    let _socket_guard = EnvVarGuard::remove("HERDR_SOCKET");
+    let _home_guard = EnvVarGuard::set("HOME", temp.path());
+    let _xdg_guard = EnvVarGuard::set("XDG_RUNTIME_DIR", temp.path());
+
+    let xdg_sock = temp.path().join("herdr/herdr.sock");
+    std::fs::create_dir_all(xdg_sock.parent().unwrap()).unwrap();
+    std::fs::write(&xdg_sock, b"").unwrap();
+
+    assert_eq!(discover_socket(), Some(xdg_sock));
+}
+
+#[test]
 fn test_discover_socket_none_when_no_socket_exists() {
     let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("no_socket");
     let _socket_guard = EnvVarGuard::remove("HERDR_SOCKET");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
+    let _xdg_guard = EnvVarGuard::remove("XDG_RUNTIME_DIR");
 
     let uid = unsafe { libc::getuid() };
     let run_sock = PathBuf::from(format!("/run/user/{}/herdr/herdr.sock", uid));

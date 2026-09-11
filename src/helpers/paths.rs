@@ -1,12 +1,13 @@
 use std::path::PathBuf;
 
 pub fn home_dir() -> PathBuf {
-    let home = std::env::var("HOME").unwrap_or_else(|_| ".".to_string());
-    PathBuf::from(home)
+    std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("."))
 }
 
 pub fn herdr_config_path() -> PathBuf {
-    if let Ok(custom) = std::env::var("HERDR_CONFIG_PATH") {
+    if let Some(custom) = std::env::var_os("HERDR_CONFIG_PATH") {
         return PathBuf::from(custom);
     }
     let local = home_dir().join(".config/herdr/config.local.toml");
@@ -17,14 +18,15 @@ pub fn herdr_config_path() -> PathBuf {
 }
 
 pub fn plugin_config_path() -> PathBuf {
-    if let Ok(custom) = std::env::var("HERDR_STATUS_BAR_CONFIG") {
+    if let Some(custom) = std::env::var_os("HERDR_STATUS_BAR_CONFIG") {
         return PathBuf::from(custom);
     }
     home_dir().join(".config/herdr/status-bar.json")
 }
 
 pub fn discover_socket() -> Option<PathBuf> {
-    if let Ok(path) = std::env::var("HERDR_SOCKET") {
+    // 1. Explicit env override
+    if let Some(path) = std::env::var_os("HERDR_SOCKET") {
         let p = PathBuf::from(path);
         if p.exists() {
             return Some(p);
@@ -32,16 +34,40 @@ pub fn discover_socket() -> Option<PathBuf> {
     }
 
     let home = home_dir();
-    let candidates = [
-        home.join(".herdr/herdr.sock"),
-        home.join(".config/herdr/herdr.sock"),
-        PathBuf::from(format!("/run/user/{}/herdr/herdr.sock", unsafe {
-            libc::getuid()
-        })),
-        PathBuf::from(format!("/tmp/herdr-{}.sock", unsafe { libc::getuid() })),
-    ];
 
-    candidates.into_iter().find(|candidate| candidate.exists())
+    // 2. Local user home directory locations
+    let home_sock = home.join(".herdr/herdr.sock");
+    if home_sock.exists() {
+        return Some(home_sock);
+    }
+
+    let config_sock = home.join(".config/herdr/herdr.sock");
+    if config_sock.exists() {
+        return Some(config_sock);
+    }
+
+    // 3. Standard Linux XDG Runtime Directory
+    if let Some(runtime_dir) = std::env::var_os("XDG_RUNTIME_DIR") {
+        let xdg_sock = PathBuf::from(runtime_dir).join("herdr/herdr.sock");
+        if xdg_sock.exists() {
+            return Some(xdg_sock);
+        }
+    }
+
+    // 4. Fallback runtime and tmp paths using UID (query libc::getuid once)
+    let uid = unsafe { libc::getuid() };
+
+    let run_sock = PathBuf::from(format!("/run/user/{}/herdr/herdr.sock", uid));
+    if run_sock.exists() {
+        return Some(run_sock);
+    }
+
+    let tmp_sock = PathBuf::from(format!("/tmp/herdr-{}.sock", uid));
+    if tmp_sock.exists() {
+        return Some(tmp_sock);
+    }
+
+    None
 }
 
 #[cfg(test)]
