@@ -376,7 +376,7 @@ impl<'a> Widget for MenuModalWidget<'a> {
     }
 }
 
-pub async fn run_modal_menu(
+pub fn run_modal_menu(
     client: HerdrClient,
     config: StatusBarConfig,
 ) -> Result<(), Box<dyn std::error::Error>> {

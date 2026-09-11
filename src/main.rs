@@ -22,8 +22,7 @@ enum Commands {
     Check,
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
     let config = StatusBarConfig::load();
     let client = HerdrClient::new();
@@ -37,7 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}", render_ansi_line(&state, &config));
         }
         Commands::Menu => {
-            run_modal_menu(client, config).await?;
+            run_modal_menu(client, config)?;
         }
         Commands::Check => {
             println!("🔍 Inspecting Herdr IPC Connection...");
