@@ -36,3 +36,9 @@ fn test_terminal_guard_with_mouse_capture_initialization_or_unsupported() {
         }
     }
 }
+
+#[test]
+fn test_restore_terminal_does_not_panic() {
+    restore_terminal(false);
+    restore_terminal(true);
+}
