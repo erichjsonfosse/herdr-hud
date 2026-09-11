@@ -18,7 +18,7 @@ A context-based, Zellij-inspired status bar and interactive command palette plug
   * **Mouse Pointer Support:** Click category tabs to switch views, or click any action row to execute it immediately.
   * **Tuxedo Cat ASCII Mascot:** Styled header banner with visual guidance.
 * **Streamlined Tab Bar HUD (`line`):** High-contrast ANSI one-liner prefixed with the Tuxedo Cat paw mascot (`🐾 <Ctrl+B> Prefix │ ...`) for embedding into Herdr's top `tab_bar_right`.
-* **Zero Boilerplate:** Automatically discovers active Herdr configuration (`prefix`, keybindings) from `$HERDR_CONFIG_PATH` or `~/.config/herdr/config.toml`.
+* **Zero Boilerplate:** Automatically discovers active Herdr configuration (`prefix`, keybindings) from `$HERDR_CONFIG_PATH`, `~/.config/herdr/config.local.toml`, or `~/.config/herdr/config.toml`.
 
 ---
 
