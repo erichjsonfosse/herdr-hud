@@ -1,7 +1,6 @@
 use crate::config::StatusBarConfig;
-use crate::state::StatusBarState;
 
-pub fn render_ansi_line(_state: &StatusBarState, config: &StatusBarConfig) -> String {
+pub fn render_ansi_line(config: &StatusBarConfig) -> String {
     let mut hint_parts = Vec::new();
     for hint in &config.hints {
         hint_parts.push(format!(

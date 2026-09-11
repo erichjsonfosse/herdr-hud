@@ -1,7 +1,6 @@
 use clap::{Parser, Subcommand};
 use herdr_status_bar::client::HerdrClient;
 use herdr_status_bar::config::StatusBarConfig;
-use herdr_status_bar::state::StatusBarState;
 use herdr_status_bar::ui::{render_ansi_line, run_modal_menu};
 
 #[derive(Parser)]
@@ -29,11 +28,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command.unwrap_or(Commands::Line) {
         Commands::Line => {
-            let mut state = StatusBarState::new();
-            if let Some(snapshot) = client.fetch_snapshot_sync() {
-                HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
-            }
-            println!("{}", render_ansi_line(&state, &config));
+            println!("{}", render_ansi_line(&config));
         }
         Commands::Menu => {
             run_modal_menu(client, config)?;

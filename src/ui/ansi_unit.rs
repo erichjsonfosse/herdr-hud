@@ -3,9 +3,8 @@ use crate::config::KeyHint;
 
 #[test]
 fn test_render_ansi_line_basic() {
-    let state = StatusBarState::new();
     let config = StatusBarConfig::default();
-    let line = render_ansi_line(&state, &config);
+    let line = render_ansi_line(&config);
 
     assert!(line.starts_with("🐾 "));
     assert!(line.contains("<Ctrl+B>"));
@@ -19,7 +18,6 @@ fn test_render_ansi_line_basic() {
 
 #[test]
 fn test_render_ansi_line_custom_hints() {
-    let state = StatusBarState::new();
     let config = StatusBarConfig {
         prefix_key: "Alt+A".to_string(),
         hints: vec![
@@ -34,7 +32,7 @@ fn test_render_ansi_line_custom_hints() {
         ],
     };
 
-    let line = render_ansi_line(&state, &config);
+    let line = render_ansi_line(&config);
     assert_eq!(
         line,
         "🐾 \x1b[36m\x1b[1m<Alt+A>\x1b[0m Prefix\x1b[90m │ \x1b[0m\x1b[36m\x1b[1m<t>\x1b[0m New"
@@ -43,19 +41,17 @@ fn test_render_ansi_line_custom_hints() {
 
 #[test]
 fn test_render_ansi_line_empty_hints() {
-    let state = StatusBarState::new();
     let config = StatusBarConfig {
         prefix_key: "Ctrl+B".to_string(),
         hints: vec![],
     };
 
-    let line = render_ansi_line(&state, &config);
+    let line = render_ansi_line(&config);
     assert_eq!(line, "🐾 ");
 }
 
 #[test]
 fn test_render_ansi_line_single_hint_has_no_separator() {
-    let state = StatusBarState::new();
     let config = StatusBarConfig {
         prefix_key: "Ctrl+B".to_string(),
         hints: vec![KeyHint {
@@ -64,7 +60,7 @@ fn test_render_ansi_line_single_hint_has_no_separator() {
         }],
     };
 
-    let line = render_ansi_line(&state, &config);
+    let line = render_ansi_line(&config);
     assert_eq!(line, "🐾 \x1b[36m\x1b[1m<q>\x1b[0m Quit");
     assert!(!line.contains("│"));
 }
