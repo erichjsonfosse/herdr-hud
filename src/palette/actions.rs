@@ -55,6 +55,7 @@ pub fn get_palette_categories(config: &StatusBarConfig) -> Vec<PaletteCategory> 
                         "herdr".to_string(),
                         "workspace".to_string(),
                         "create".to_string(),
+                        "--focus".to_string(),
                     ]),
                 },
                 PaletteAction {
@@ -257,7 +258,12 @@ pub fn trigger_action(
             return true;
         }
         ActionKind::ToggleZoom => {
-            let mut cmd = vec!["herdr".to_string(), "pane".to_string(), "zoom".to_string()];
+            let mut cmd = vec![
+                "herdr".to_string(),
+                "pane".to_string(),
+                "zoom".to_string(),
+                "--toggle".to_string(),
+            ];
             if let Some(pane_id) = &state.active_pane {
                 cmd.push("--pane".to_string());
                 cmd.push(pane_id.clone());

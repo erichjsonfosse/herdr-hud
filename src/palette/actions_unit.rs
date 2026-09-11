@@ -22,6 +22,21 @@ fn test_palette_categories_contain_expected_items() {
     assert_eq!(categories[1].name, "Tabs");
     assert_eq!(categories[2].name, "Panes");
 
+    let ws_actions = &categories[0].actions;
+    let create_ws = ws_actions
+        .iter()
+        .find(|a| a.name == "Create Workspace")
+        .expect("Create Workspace action exists");
+    assert_eq!(
+        create_ws.command.as_ref().unwrap(),
+        &vec![
+            "herdr".to_string(),
+            "workspace".to_string(),
+            "create".to_string(),
+            "--focus".to_string(),
+        ]
+    );
+
     let tab_actions = &categories[1].actions;
     assert!(tab_actions.iter().any(|a| a.name == "Create New Tab"));
     assert!(tab_actions.iter().any(|a| a.name == "Rename Tab"));
@@ -450,6 +465,7 @@ fn test_trigger_action_toggle_zoom() {
             "herdr".to_string(),
             "pane".to_string(),
             "zoom".to_string(),
+            "--toggle".to_string(),
             "--pane".to_string(),
             "pane-zoom-1".to_string(),
         ])
@@ -473,6 +489,7 @@ fn test_trigger_action_toggle_zoom() {
             "herdr".to_string(),
             "pane".to_string(),
             "zoom".to_string(),
+            "--toggle".to_string(),
             "--current".to_string(),
         ])
     );
@@ -622,6 +639,7 @@ fn test_trigger_action_all_catalog_actions() {
                             "herdr".to_string(),
                             "pane".to_string(),
                             "zoom".to_string(),
+                            "--toggle".to_string(),
                             "--pane".to_string(),
                             "pane-cat-1".to_string(),
                         ])
