@@ -42,19 +42,18 @@ pub(crate) fn format_action_description(desc: &str, max_width: usize) -> String 
     }
 }
 
-pub(crate) fn hit_test_category_tab(
+pub(crate) fn hit_test_category_tab_at(
     column: u16,
     row: u16,
     categories: &[PaletteCategory],
+    origin_x: u16,
+    origin_y: u16,
 ) -> Option<usize> {
-    let area_y = 1;
-    let cat_tabs_y = area_y + 5;
+    let cat_tabs_y = origin_y + 5;
     if row >= cat_tabs_y && row < cat_tabs_y + 3 {
-        let mut current_col = 1u16;
+        let mut current_col = origin_x;
         for (i, cat) in categories.iter().enumerate() {
-            let tab_len = format!("  [{}. {}]  ", cat.key_number, cat.name)
-                .chars()
-                .count() as u16;
+            let tab_len = (cat.name.chars().count() + 9) as u16;
             if column >= current_col && column < current_col + tab_len {
                 return Some(i);
             }
@@ -64,9 +63,20 @@ pub(crate) fn hit_test_category_tab(
     None
 }
 
-pub(crate) fn hit_test_action_item(row: u16, total_actions: usize) -> Option<usize> {
-    let area_y = 1;
-    let cat_tabs_y = area_y + 5;
+pub(crate) fn hit_test_category_tab(
+    column: u16,
+    row: u16,
+    categories: &[PaletteCategory],
+) -> Option<usize> {
+    hit_test_category_tab_at(column, row, categories, 1, 1)
+}
+
+pub(crate) fn hit_test_action_item_at(
+    row: u16,
+    total_actions: usize,
+    origin_y: u16,
+) -> Option<usize> {
+    let cat_tabs_y = origin_y + 5;
     let action_list_y_start = cat_tabs_y + 3;
     if row >= action_list_y_start {
         let clicked_idx = (row - action_list_y_start) as usize;
@@ -75,6 +85,10 @@ pub(crate) fn hit_test_action_item(row: u16, total_actions: usize) -> Option<usi
         }
     }
     None
+}
+
+pub(crate) fn hit_test_action_item(row: u16, total_actions: usize) -> Option<usize> {
+    hit_test_action_item_at(row, total_actions, 1)
 }
 
 pub struct MenuModalWidget<'a> {

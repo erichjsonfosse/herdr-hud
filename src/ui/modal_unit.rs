@@ -87,3 +87,27 @@ fn test_hit_test_action_item() {
     assert_eq!(hit_test_action_item(12, total_actions), Some(3));
     assert_eq!(hit_test_action_item(13, total_actions), None);
 }
+
+#[test]
+fn test_hit_test_with_custom_origin() {
+    let config = StatusBarConfig::default();
+    let categories = get_palette_categories(&config);
+    // Custom origin: x=10, y=5
+    // cat_tabs_y is 5 + 5 = 10
+    let row = 10;
+    // Tab 0 starts at x=10, len=19 -> cols 10..29
+    assert_eq!(
+        hit_test_category_tab_at(10, row, &categories, 10, 5),
+        Some(0)
+    );
+    assert_eq!(
+        hit_test_category_tab_at(28, row, &categories, 10, 5),
+        Some(0)
+    );
+
+    // Action list starts at cat_tabs_y + 3 = 13
+    assert_eq!(hit_test_action_item_at(12, 4, 5), None);
+    assert_eq!(hit_test_action_item_at(13, 4, 5), Some(0));
+    assert_eq!(hit_test_action_item_at(16, 4, 5), Some(3));
+    assert_eq!(hit_test_action_item_at(17, 4, 5), None);
+}
