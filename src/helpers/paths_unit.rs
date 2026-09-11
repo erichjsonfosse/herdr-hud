@@ -42,6 +42,23 @@ fn test_herdr_config_path_with_env() {
 }
 
 #[test]
+fn test_herdr_config_path_prefers_config_local_toml() {
+    let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+    let temp = TempDir::new("herdr_config_local");
+    let _home_guard = EnvVarGuard::set("HOME", temp.path());
+    let _config_guard = EnvVarGuard::remove("HERDR_CONFIG_PATH");
+
+    let herdr_dir = temp.path().join(".config/herdr");
+    std::fs::create_dir_all(&herdr_dir).unwrap();
+    let local_file = herdr_dir.join("config.local.toml");
+    std::fs::write(&local_file, "# local config").unwrap();
+    let toml_file = herdr_dir.join("config.toml");
+    std::fs::write(&toml_file, "# main config").unwrap();
+
+    assert_eq!(herdr_config_path(), local_file);
+}
+
+#[test]
 fn test_plugin_config_path_default() {
     let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("plugin_config_default");

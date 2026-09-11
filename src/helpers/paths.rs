@@ -9,6 +9,10 @@ pub fn herdr_config_path() -> PathBuf {
     if let Ok(custom) = std::env::var("HERDR_CONFIG_PATH") {
         return PathBuf::from(custom);
     }
+    let local = home_dir().join(".config/herdr/config.local.toml");
+    if local.exists() {
+        return local;
+    }
     home_dir().join(".config/herdr/config.toml")
 }
 
