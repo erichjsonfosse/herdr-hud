@@ -8,6 +8,14 @@ fn test_format_key_token() {
 }
 
 #[test]
+fn test_format_key_token_borrowed_cow() {
+    match format_key_token("ctrl") {
+        std::borrow::Cow::Borrowed(b) => assert_eq!(b, "Ctrl"),
+        std::borrow::Cow::Owned(_) => panic!("expected borrowed Cow for static key token"),
+    }
+}
+
+#[test]
 fn test_format_key_token_arrows() {
     assert_eq!(format_key_token("up"), "▲");
     assert_eq!(format_key_token("down"), "▼");
