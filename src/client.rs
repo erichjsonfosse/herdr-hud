@@ -1,14 +1,10 @@
 use crate::helpers::paths::discover_socket;
-use crate::state::{AgentEntry, AgentStatus, StatusBarState};
+use crate::state::StatusBarState;
 use serde_json::Value;
 use std::path::PathBuf;
 use std::process::Command;
-use tokio::net::UnixStream;
 
-#[allow(dead_code)]
-pub struct HerdrClient {
-    socket_path: Option<PathBuf>,
-}
+pub struct HerdrClient;
 
 impl Default for HerdrClient {
     fn default() -> Self {
@@ -18,9 +14,7 @@ impl Default for HerdrClient {
 
 impl HerdrClient {
     pub fn new() -> Self {
-        Self {
-            socket_path: Self::discover_socket(),
-        }
+        Self
     }
 
     pub fn discover_socket() -> Option<PathBuf> {
@@ -36,15 +30,6 @@ impl HerdrClient {
         if output.status.success() {
             let stdout = String::from_utf8_lossy(&output.stdout);
             serde_json::from_str(&stdout).ok()
-        } else {
-            None
-        }
-    }
-
-    #[allow(dead_code)]
-    pub async fn connect_stream(&self) -> Option<UnixStream> {
-        if let Some(path) = &self.socket_path {
-            UnixStream::connect(path).await.ok()
         } else {
             None
         }
@@ -134,45 +119,6 @@ impl HerdrClient {
             state.active_tab_id = Some(tab_id.clone());
             state.active_tab_label = Some(tab_id.clone());
             state.active_tab = Some(tab_id.clone());
-        }
-
-        // Agent statuses
-        if let Some(panes) = session.get("panes").and_then(|v| v.as_array()) {
-            for pane in panes {
-                let pane_id = pane
-                    .get("pane_id")
-                    .or_else(|| pane.get("id"))
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                if pane_id.is_empty() {
-                    continue;
-                }
-
-                if let Some(agent) = pane.get("agent").and_then(|v| v.as_str()) {
-                    let status_str = pane
-                        .get("agent_status")
-                        .and_then(|v| v.as_str())
-                        .unwrap_or("idle");
-
-                    let status = match status_str {
-                        "working" => AgentStatus::Working,
-                        "blocked" => AgentStatus::Blocked,
-                        "done" => AgentStatus::Done,
-                        "idle" => AgentStatus::Idle,
-                        _ => AgentStatus::Unknown,
-                    };
-
-                    state.agents.insert(
-                        pane_id.clone(),
-                        AgentEntry {
-                            pane_id,
-                            agent_name: agent.to_string(),
-                            status,
-                        },
-                    );
-                }
-            }
         }
     }
 }
