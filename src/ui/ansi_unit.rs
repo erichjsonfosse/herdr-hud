@@ -235,3 +235,46 @@ fn test_render_ansi_line_modes() {
     assert!(line.contains("\x1b[32m"));
     assert!(line.contains("<Ctrl+B>"));
 }
+
+#[test]
+fn test_render_ansi_line_deterministic_agent_ordering() {
+    let mut state = StatusBarState::new();
+    let config = StatusBarConfig {
+        show_agents: true,
+        ..Default::default()
+    };
+
+    // Insert agents out of order
+    state.agents.insert(
+        "pane-c".to_string(),
+        AgentEntry {
+            pane_id: "pane-c".to_string(),
+            agent_name: "charlie".to_string(),
+            status: AgentStatus::Done,
+        },
+    );
+    state.agents.insert(
+        "pane-a".to_string(),
+        AgentEntry {
+            pane_id: "pane-a".to_string(),
+            agent_name: "alice".to_string(),
+            status: AgentStatus::Working,
+        },
+    );
+    state.agents.insert(
+        "pane-b".to_string(),
+        AgentEntry {
+            pane_id: "pane-b".to_string(),
+            agent_name: "bob".to_string(),
+            status: AgentStatus::Blocked,
+        },
+    );
+
+    let line = render_ansi_line(&state, &config);
+    let pos_a = line.find("alice").expect("alice should appear");
+    let pos_b = line.find("bob").expect("bob should appear");
+    let pos_c = line.find("charlie").expect("charlie should appear");
+
+    assert!(pos_a < pos_b);
+    assert!(pos_b < pos_c);
+}

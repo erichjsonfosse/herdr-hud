@@ -1,68 +1,6 @@
 use super::*;
-use crate::helpers::paths::TEST_ENV_MUTEX;
-use std::path::{Path, PathBuf};
+use crate::helpers::paths::{EnvVarGuard, TEST_ENV_MUTEX, TempDir};
 use toml::Value as TomlValue;
-
-struct EnvVarGuard {
-    key: &'static str,
-    original: Option<String>,
-}
-
-impl EnvVarGuard {
-    fn set(key: &'static str, value: impl AsRef<std::ffi::OsStr>) -> Self {
-        let original = std::env::var(key).ok();
-        unsafe {
-            std::env::set_var(key, value);
-        }
-        Self { key, original }
-    }
-}
-
-impl Drop for EnvVarGuard {
-    fn drop(&mut self) {
-        unsafe {
-            if let Some(ref val) = self.original {
-                std::env::set_var(self.key, val);
-            } else {
-                std::env::remove_var(self.key);
-            }
-        }
-    }
-}
-
-struct TempDir {
-    path: PathBuf,
-}
-
-impl TempDir {
-    fn new(name: &str) -> Self {
-        use std::sync::atomic::{AtomicUsize, Ordering};
-        static COUNTER: AtomicUsize = AtomicUsize::new(0);
-        let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir().join(format!(
-            "herdr_cfg_test_{}_{}_{}_{}",
-            name,
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos(),
-            id
-        ));
-        std::fs::create_dir_all(&dir).expect("failed to create temporary test directory");
-        Self { path: dir }
-    }
-
-    fn path(&self) -> &Path {
-        &self.path
-    }
-}
-
-impl Drop for TempDir {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.path);
-    }
-}
 
 #[test]
 fn test_from_herdr_config_defaults() {

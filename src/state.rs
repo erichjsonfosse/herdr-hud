@@ -1,19 +1,14 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum HerdrMode {
+    #[default]
     Normal,
     Navigate,
     Scroll,
     Agent,
-}
-
-impl Default for HerdrMode {
-    fn default() -> Self {
-        HerdrMode::Normal
-    }
 }
 
 impl HerdrMode {

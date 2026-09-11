@@ -57,8 +57,7 @@ pub fn format_key_chord(chord: &str) -> String {
 }
 
 pub fn format_action_key_in_navigate(raw_action: &str) -> String {
-    if raw_action.starts_with("prefix+") {
-        let suffix = &raw_action["prefix+".len()..];
+    if let Some(suffix) = raw_action.strip_prefix("prefix+") {
         format_key_token(suffix)
     } else {
         format_key_chord(raw_action)

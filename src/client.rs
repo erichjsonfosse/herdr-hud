@@ -10,6 +10,12 @@ pub struct HerdrClient {
     socket_path: Option<PathBuf>,
 }
 
+impl Default for HerdrClient {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl HerdrClient {
     pub fn new() -> Self {
         Self {
@@ -93,12 +99,12 @@ impl HerdrClient {
         }
 
         // Fallback for workspace if not found in array
-        if state.active_workspace_id.is_none() {
-            if let Some(ref ws_id) = focused_ws_id {
-                state.active_workspace_id = Some(ws_id.clone());
-                state.active_workspace_label = Some(ws_id.clone());
-                state.active_workspace = Some(ws_id.clone());
-            }
+        if state.active_workspace_id.is_none()
+            && let Some(ref ws_id) = focused_ws_id
+        {
+            state.active_workspace_id = Some(ws_id.clone());
+            state.active_workspace_label = Some(ws_id.clone());
+            state.active_workspace = Some(ws_id.clone());
         }
 
         // Match focused tab in tabs array
@@ -122,12 +128,12 @@ impl HerdrClient {
         }
 
         // Fallback for tab if not found in array
-        if state.active_tab_id.is_none() {
-            if let Some(ref tab_id) = focused_tab_id {
-                state.active_tab_id = Some(tab_id.clone());
-                state.active_tab_label = Some(tab_id.clone());
-                state.active_tab = Some(tab_id.clone());
-            }
+        if state.active_tab_id.is_none()
+            && let Some(ref tab_id) = focused_tab_id
+        {
+            state.active_tab_id = Some(tab_id.clone());
+            state.active_tab_label = Some(tab_id.clone());
+            state.active_tab = Some(tab_id.clone());
         }
 
         // Agent statuses

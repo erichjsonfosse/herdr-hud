@@ -636,3 +636,177 @@ fn test_trigger_action_all_catalog_actions() {
         }
     }
 }
+
+#[test]
+fn test_build_prompt_command_create_tab_with_name() {
+    let state = StatusBarState::new();
+    let cmd = build_prompt_command(&ModalInputTarget::CreateTab, "my-new-tab", &state);
+    assert_eq!(
+        cmd,
+        Some(vec![
+            "herdr".to_string(),
+            "tab".to_string(),
+            "create".to_string(),
+            "--focus".to_string(),
+            "--label".to_string(),
+            "my-new-tab".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_create_tab_whitespace_trimming() {
+    let state = StatusBarState::new();
+    let cmd = build_prompt_command(&ModalInputTarget::CreateTab, "   trimmed-tab   ", &state);
+    assert_eq!(
+        cmd,
+        Some(vec![
+            "herdr".to_string(),
+            "tab".to_string(),
+            "create".to_string(),
+            "--focus".to_string(),
+            "--label".to_string(),
+            "trimmed-tab".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_create_tab_empty_or_spaces() {
+    let state = StatusBarState::new();
+    let cmd_empty = build_prompt_command(&ModalInputTarget::CreateTab, "", &state);
+    assert_eq!(
+        cmd_empty,
+        Some(vec![
+            "herdr".to_string(),
+            "tab".to_string(),
+            "create".to_string(),
+            "--focus".to_string(),
+        ])
+    );
+
+    let cmd_spaces = build_prompt_command(&ModalInputTarget::CreateTab, "   ", &state);
+    assert_eq!(
+        cmd_spaces,
+        Some(vec![
+            "herdr".to_string(),
+            "tab".to_string(),
+            "create".to_string(),
+            "--focus".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_rename_workspace_success() {
+    let mut state = StatusBarState::new();
+    state.active_workspace_id = Some("ws-alpha-1".to_string());
+
+    let cmd = build_prompt_command(&ModalInputTarget::RenameWorkspace, "project-work", &state);
+    assert_eq!(
+        cmd,
+        Some(vec![
+            "herdr".to_string(),
+            "workspace".to_string(),
+            "rename".to_string(),
+            "ws-alpha-1".to_string(),
+            "project-work".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_rename_workspace_whitespace_trimming() {
+    let mut state = StatusBarState::new();
+    state.active_workspace_id = Some("ws-alpha-1".to_string());
+
+    let cmd = build_prompt_command(
+        &ModalInputTarget::RenameWorkspace,
+        "   project-work   ",
+        &state,
+    );
+    assert_eq!(
+        cmd,
+        Some(vec![
+            "herdr".to_string(),
+            "workspace".to_string(),
+            "rename".to_string(),
+            "ws-alpha-1".to_string(),
+            "project-work".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_rename_workspace_empty_or_whitespace() {
+    let mut state = StatusBarState::new();
+    state.active_workspace_id = Some("ws-alpha-1".to_string());
+
+    let cmd_empty = build_prompt_command(&ModalInputTarget::RenameWorkspace, "", &state);
+    assert_eq!(cmd_empty, None);
+
+    let cmd_spaces = build_prompt_command(&ModalInputTarget::RenameWorkspace, "   \t\n   ", &state);
+    assert_eq!(cmd_spaces, None);
+}
+
+#[test]
+fn test_build_prompt_command_rename_workspace_missing_id() {
+    let state = StatusBarState::new(); // active_workspace_id is None
+    let cmd = build_prompt_command(&ModalInputTarget::RenameWorkspace, "new-name", &state);
+    assert_eq!(cmd, None);
+}
+
+#[test]
+fn test_build_prompt_command_rename_tab_success() {
+    let mut state = StatusBarState::new();
+    state.active_tab_id = Some("tab-beta-2".to_string());
+
+    let cmd = build_prompt_command(&ModalInputTarget::RenameTab, "editor", &state);
+    assert_eq!(
+        cmd,
+        Some(vec![
+            "herdr".to_string(),
+            "tab".to_string(),
+            "rename".to_string(),
+            "tab-beta-2".to_string(),
+            "editor".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_rename_tab_whitespace_trimming() {
+    let mut state = StatusBarState::new();
+    state.active_tab_id = Some("tab-beta-2".to_string());
+
+    let cmd = build_prompt_command(&ModalInputTarget::RenameTab, "   editor   ", &state);
+    assert_eq!(
+        cmd,
+        Some(vec![
+            "herdr".to_string(),
+            "tab".to_string(),
+            "rename".to_string(),
+            "tab-beta-2".to_string(),
+            "editor".to_string(),
+        ])
+    );
+}
+
+#[test]
+fn test_build_prompt_command_rename_tab_empty_or_whitespace() {
+    let mut state = StatusBarState::new();
+    state.active_tab_id = Some("tab-beta-2".to_string());
+
+    let cmd_empty = build_prompt_command(&ModalInputTarget::RenameTab, "", &state);
+    assert_eq!(cmd_empty, None);
+
+    let cmd_spaces = build_prompt_command(&ModalInputTarget::RenameTab, "   \t\n   ", &state);
+    assert_eq!(cmd_spaces, None);
+}
+
+#[test]
+fn test_build_prompt_command_rename_tab_missing_id() {
+    let state = StatusBarState::new(); // active_tab_id is None
+    let cmd = build_prompt_command(&ModalInputTarget::RenameTab, "editor", &state);
+    assert_eq!(cmd, None);
+}

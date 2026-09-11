@@ -1,74 +1,4 @@
 use super::*;
-use std::path::{Path, PathBuf};
-
-struct EnvVarGuard {
-    key: &'static str,
-    original: Option<String>,
-}
-
-impl EnvVarGuard {
-    fn set(key: &'static str, value: impl AsRef<std::ffi::OsStr>) -> Self {
-        let original = std::env::var(key).ok();
-        unsafe {
-            std::env::set_var(key, value);
-        }
-        Self { key, original }
-    }
-
-    fn remove(key: &'static str) -> Self {
-        let original = std::env::var(key).ok();
-        unsafe {
-            std::env::remove_var(key);
-        }
-        Self { key, original }
-    }
-}
-
-impl Drop for EnvVarGuard {
-    fn drop(&mut self) {
-        unsafe {
-            if let Some(ref val) = self.original {
-                std::env::set_var(self.key, val);
-            } else {
-                std::env::remove_var(self.key);
-            }
-        }
-    }
-}
-
-struct TempDir {
-    path: PathBuf,
-}
-
-impl TempDir {
-    fn new(name: &str) -> Self {
-        use std::sync::atomic::{AtomicUsize, Ordering};
-        static COUNTER: AtomicUsize = AtomicUsize::new(0);
-        let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-        let dir = std::env::temp_dir().join(format!(
-            "herdr_test_{}_{}_{}_{}",
-            name,
-            std::process::id(),
-            std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos(),
-            id
-        ));
-        std::fs::create_dir_all(&dir).expect("failed to create temporary test directory");
-        Self { path: dir }
-    }
-
-    fn path(&self) -> &Path {
-        &self.path
-    }
-}
-
-impl Drop for TempDir {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.path);
-    }
-}
 
 #[test]
 fn test_home_dir_returns_valid_path() {
@@ -231,5 +161,41 @@ fn test_discover_socket_none_when_no_socket_exists() {
         assert_eq!(result, None);
     } else {
         assert!(result == Some(run_sock) || result == Some(tmp_sock));
+    }
+}
+
+#[test]
+fn test_env_var_guard_preserves_non_utf8() {
+    #[cfg(unix)]
+    {
+        use std::os::unix::ffi::OsStrExt;
+        let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
+        let var_name = "TEST_HERDR_NON_UTF8_KEY";
+        let non_utf8_initial = std::ffi::OsStr::from_bytes(&[0x61, 0x62, 0x80, 0x63]);
+        let non_utf8_target = std::ffi::OsStr::from_bytes(&[0x78, 0x79, 0xff, 0x7a]);
+
+        // Pre-set initial non-UTF8 value
+        unsafe {
+            std::env::set_var(var_name, non_utf8_initial);
+        }
+
+        {
+            let _guard = EnvVarGuard::set(var_name, non_utf8_target);
+            assert_eq!(
+                std::env::var_os(var_name),
+                Some(non_utf8_target.to_os_string())
+            );
+        }
+
+        // After guard drops, previous non-UTF8 value should be restored
+        assert_eq!(
+            std::env::var_os(var_name),
+            Some(non_utf8_initial.to_os_string())
+        );
+
+        // Clean up
+        unsafe {
+            std::env::remove_var(var_name);
+        }
     }
 }

@@ -1,12 +1,9 @@
+use super::terminal::TerminalGuard;
 use crate::client::HerdrClient;
 use crate::config::StatusBarConfig;
 use crate::state::{AgentStatus, HerdrMode, StatusBarState};
 use chrono::Local;
-use crossterm::{
-    event::{self, Event, KeyCode, KeyEventKind, KeyModifiers},
-    execute,
-    terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
-};
+use crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use ratatui::{
     Terminal,
     backend::CrosstermBackend,
@@ -64,7 +61,9 @@ impl<'a> Widget for StatusBarWidget<'a> {
         let mut right_spans = Vec::new();
 
         if self.config.show_agents && !self.state.agents.is_empty() {
-            for (_, agent) in &self.state.agents {
+            let mut sorted_agents: Vec<_> = self.state.agents.values().collect();
+            sorted_agents.sort_by_key(|a| (&a.pane_id, &a.agent_name));
+            for agent in sorted_agents {
                 let (sym_color, sym) = match agent.status {
                     AgentStatus::Working => (Color::LightGreen, "●"),
                     AgentStatus::Blocked => (Color::LightRed, "▲"),
@@ -114,9 +113,8 @@ pub async fn run_tui_loop(
     client: HerdrClient,
     config: StatusBarConfig,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    enable_raw_mode()?;
-    let mut stdout = stdout();
-    execute!(stdout, EnterAlternateScreen)?;
+    let _guard = TerminalGuard::new(false)?;
+    let stdout = stdout();
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
 
@@ -142,37 +140,37 @@ pub async fn run_tui_loop(
         })?;
 
         // Handle events / keypresses
-        if event::poll(Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
-                if key.kind == KeyEventKind::Release {
-                    continue;
-                }
-                match key.code {
-                    KeyCode::Char('q') | KeyCode::Esc => {
-                        if state.mode == HerdrMode::Normal {
-                            break;
-                        } else {
-                            state.mode = HerdrMode::Normal;
-                        }
-                    }
-                    KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+        if event::poll(Duration::from_millis(100))?
+            && let Event::Key(key) = event::read()?
+        {
+            if key.kind == KeyEventKind::Release {
+                continue;
+            }
+            match key.code {
+                KeyCode::Char('q') | KeyCode::Esc => {
+                    if state.mode == HerdrMode::Normal {
                         break;
-                    }
-                    KeyCode::Char('s') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        state.mode = match state.mode {
-                            HerdrMode::Normal => HerdrMode::Navigate,
-                            HerdrMode::Navigate => HerdrMode::Normal,
-                            _ => HerdrMode::Normal,
-                        };
-                    }
-                    KeyCode::Char('v') if state.mode == HerdrMode::Navigate => {
+                    } else {
                         state.mode = HerdrMode::Normal;
                     }
-                    KeyCode::Char('-') if state.mode == HerdrMode::Navigate => {
-                        state.mode = HerdrMode::Normal;
-                    }
-                    _ => {}
                 }
+                KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    break;
+                }
+                KeyCode::Char('s') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    state.mode = match state.mode {
+                        HerdrMode::Normal => HerdrMode::Navigate,
+                        HerdrMode::Navigate => HerdrMode::Normal,
+                        _ => HerdrMode::Normal,
+                    };
+                }
+                KeyCode::Char('v') if state.mode == HerdrMode::Navigate => {
+                    state.mode = HerdrMode::Normal;
+                }
+                KeyCode::Char('-') if state.mode == HerdrMode::Navigate => {
+                    state.mode = HerdrMode::Normal;
+                }
+                _ => {}
             }
         }
 
@@ -184,11 +182,6 @@ pub async fn run_tui_loop(
             last_snapshot_fetch = std::time::Instant::now();
         }
     }
-
-    // Cleanup terminal
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen)?;
-    terminal.show_cursor()?;
 
     Ok(())
 }

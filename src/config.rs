@@ -29,22 +29,20 @@ impl StatusBarConfig {
     pub fn load() -> Self {
         // 1. Try to read from status-bar specific override JSON if present
         let plugin_override_path = plugin_config_path();
-        if plugin_override_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(&plugin_override_path) {
-                if let Ok(cfg) = serde_json::from_str::<StatusBarConfig>(&content) {
-                    return cfg;
-                }
-            }
+        if plugin_override_path.exists()
+            && let Ok(content) = std::fs::read_to_string(&plugin_override_path)
+            && let Ok(cfg) = serde_json::from_str::<StatusBarConfig>(&content)
+        {
+            return cfg;
         }
 
         // 2. Read live Herdr TOML configuration
         let herdr_cfg_path = herdr_config_path();
-        if herdr_cfg_path.exists() {
-            if let Ok(content) = std::fs::read_to_string(&herdr_cfg_path) {
-                if let Ok(toml_val) = toml::from_str::<TomlValue>(&content) {
-                    return Self::from_herdr_config(Some(&toml_val));
-                }
-            }
+        if herdr_cfg_path.exists()
+            && let Ok(content) = std::fs::read_to_string(&herdr_cfg_path)
+            && let Ok(toml_val) = toml::from_str::<TomlValue>(&content)
+        {
+            return Self::from_herdr_config(Some(&toml_val));
         }
 
         // 3. Fallback to default Herdr built-in shortcuts

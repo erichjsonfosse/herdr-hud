@@ -272,6 +272,55 @@ pub fn trigger_action(
     false
 }
 
+pub fn build_prompt_command(
+    target: &ModalInputTarget,
+    input: &str,
+    state: &StatusBarState,
+) -> Option<Vec<String>> {
+    let trimmed = input.trim();
+    match target {
+        ModalInputTarget::CreateTab => {
+            let mut cmd = vec![
+                "herdr".to_string(),
+                "tab".to_string(),
+                "create".to_string(),
+                "--focus".to_string(),
+            ];
+            if !trimmed.is_empty() {
+                cmd.push("--label".to_string());
+                cmd.push(trimmed.to_string());
+            }
+            Some(cmd)
+        }
+        ModalInputTarget::RenameWorkspace => {
+            if trimmed.is_empty() {
+                return None;
+            }
+            let ws_id = state.active_workspace_id.as_ref()?;
+            Some(vec![
+                "herdr".to_string(),
+                "workspace".to_string(),
+                "rename".to_string(),
+                ws_id.clone(),
+                trimmed.to_string(),
+            ])
+        }
+        ModalInputTarget::RenameTab => {
+            if trimmed.is_empty() {
+                return None;
+            }
+            let tab_id = state.active_tab_id.as_ref()?;
+            Some(vec![
+                "herdr".to_string(),
+                "tab".to_string(),
+                "rename".to_string(),
+                tab_id.clone(),
+                trimmed.to_string(),
+            ])
+        }
+    }
+}
+
 #[cfg(test)]
 #[path = "actions_unit.rs"]
 mod tests;

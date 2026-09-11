@@ -29,7 +29,9 @@ pub fn render_ansi_line(state: &StatusBarState, config: &StatusBarConfig) -> Str
 
     let mut agent_str = String::new();
     if config.show_agents && !state.agents.is_empty() {
-        for (_, agent) in &state.agents {
+        let mut sorted_agents: Vec<_> = state.agents.values().collect();
+        sorted_agents.sort_by_key(|a| (&a.pane_id, &a.agent_name));
+        for agent in sorted_agents {
             let sym = match agent.status {
                 AgentStatus::Working => "\x1b[32m●\x1b[0m",
                 AgentStatus::Blocked => "\x1b[31m▲\x1b[0m",
