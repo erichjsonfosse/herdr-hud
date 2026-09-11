@@ -23,17 +23,19 @@ enum Commands {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let cli = Cli::parse();
-    let config = StatusBarConfig::load();
-    let client = HerdrClient::new();
 
     match cli.command.unwrap_or(Commands::Line) {
         Commands::Line => {
+            let config = StatusBarConfig::load();
             println!("{}", render_ansi_line(&config));
         }
         Commands::Menu => {
+            let config = StatusBarConfig::load();
+            let client = HerdrClient::new();
             run_modal_menu(client, config)?;
         }
         Commands::Check => {
+            let client = HerdrClient::new();
             println!("🔍 Inspecting Herdr IPC Connection...");
             match HerdrClient::discover_socket() {
                 Some(path) => println!("  [✔] Found Herdr socket at: {}", path.display()),
