@@ -25,8 +25,7 @@ impl StatusBarConfig {
     pub fn load() -> Self {
         // 1. Try to read from status-bar specific override JSON if present
         let plugin_override_path = plugin_config_path();
-        if plugin_override_path.exists()
-            && let Ok(content) = std::fs::read_to_string(&plugin_override_path)
+        if let Ok(content) = std::fs::read_to_string(&plugin_override_path)
             && let Ok(cfg) = serde_json::from_str::<StatusBarConfig>(&content)
         {
             return cfg;
@@ -34,8 +33,7 @@ impl StatusBarConfig {
 
         // 2. Read live Herdr TOML configuration
         let herdr_cfg_path = herdr_config_path();
-        if herdr_cfg_path.exists()
-            && let Ok(content) = std::fs::read_to_string(&herdr_cfg_path)
+        if let Ok(content) = std::fs::read_to_string(&herdr_cfg_path)
             && let Ok(toml_val) = toml::from_str::<TomlValue>(&content)
         {
             return Self::from_herdr_config(Some(&toml_val));
@@ -57,8 +55,8 @@ impl StatusBarConfig {
 
         let formatted_prefix = format_key_chord(raw_prefix);
 
-        // Helper to extract keys
-        let get_key = |key_name: &str, default_val: &str| -> String {
+        // Helper to extract keys as borrowed string slices
+        let get_key = |key_name: &str, default_val: &'static str| -> &str {
             config
                 .and_then(|c| {
                     c.get(key_name)
@@ -67,7 +65,6 @@ impl StatusBarConfig {
                 })
                 .and_then(|v| v.as_str())
                 .unwrap_or(default_val)
-                .to_string()
         };
 
         let raw_new_tab = get_key("new_tab", "prefix+c");
@@ -83,27 +80,27 @@ impl StatusBarConfig {
                 description: "Prefix".to_string(),
             },
             KeyHint {
-                key: format_action_key_in_navigate(&raw_new_tab),
+                key: format_action_key_in_navigate(raw_new_tab),
                 description: "Tab".to_string(),
             },
             KeyHint {
-                key: format_action_key_in_navigate(&raw_split_v),
+                key: format_action_key_in_navigate(raw_split_v),
                 description: "Split".to_string(),
             },
             KeyHint {
-                key: format_action_key_in_navigate(&raw_close),
+                key: format_action_key_in_navigate(raw_close),
                 description: "Close".to_string(),
             },
             KeyHint {
-                key: format_action_key_in_navigate(&raw_zoom),
+                key: format_action_key_in_navigate(raw_zoom),
                 description: "Zoom".to_string(),
             },
             KeyHint {
-                key: format_action_key_in_navigate(&raw_help),
+                key: format_action_key_in_navigate(raw_help),
                 description: "Help".to_string(),
             },
             KeyHint {
-                key: format_action_key_in_navigate(&raw_detach),
+                key: format_action_key_in_navigate(raw_detach),
                 description: "Detach".to_string(),
             },
         ];
