@@ -76,7 +76,6 @@ impl HerdrClient {
                 if is_focused {
                     let label = ws.get("label").and_then(|v| v.as_str()).unwrap_or(id);
                     state.active_workspace_id = Some(id.to_string());
-                    state.active_workspace_label = Some(label.to_string());
                     state.active_workspace = Some(label.to_string());
                     break;
                 }
@@ -88,7 +87,6 @@ impl HerdrClient {
             && let Some(ref ws_id) = focused_ws_id
         {
             state.active_workspace_id = Some(ws_id.clone());
-            state.active_workspace_label = Some(ws_id.clone());
             state.active_workspace = Some(ws_id.clone());
         }
 
@@ -105,7 +103,6 @@ impl HerdrClient {
                 if is_focused {
                     let label = tab.get("label").and_then(|v| v.as_str()).unwrap_or(id);
                     state.active_tab_id = Some(id.to_string());
-                    state.active_tab_label = Some(label.to_string());
                     state.active_tab = Some(label.to_string());
                     break;
                 }
@@ -117,7 +114,6 @@ impl HerdrClient {
             && let Some(ref tab_id) = focused_tab_id
         {
             state.active_tab_id = Some(tab_id.clone());
-            state.active_tab_label = Some(tab_id.clone());
             state.active_tab = Some(tab_id.clone());
         }
     }

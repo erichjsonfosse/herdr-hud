@@ -412,10 +412,10 @@ pub fn run_modal_menu(
                     ModalInputTarget::CreateTab => ("Create New Tab", ""),
                     ModalInputTarget::RenameWorkspace => (
                         "Workspace",
-                        state.active_workspace_label.as_deref().unwrap_or(""),
+                        state.active_workspace.as_deref().unwrap_or(""),
                     ),
                     ModalInputTarget::RenameTab => {
-                        ("Tab", state.active_tab_label.as_deref().unwrap_or(""))
+                        ("Tab", state.active_tab.as_deref().unwrap_or(""))
                     }
                 };
                 (target_label, current_label, input_buffer.as_str())

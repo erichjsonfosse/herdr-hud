@@ -185,11 +185,11 @@ pub fn trigger_action(
         }
         ActionKind::PromptRenameWorkspace => {
             *input_target = Some(ModalInputTarget::RenameWorkspace);
-            *input_buffer = state.active_workspace_label.clone().unwrap_or_default();
+            *input_buffer = state.active_workspace.clone().unwrap_or_default();
         }
         ActionKind::PromptRenameTab => {
             *input_target = Some(ModalInputTarget::RenameTab);
-            *input_buffer = state.active_tab_label.clone().unwrap_or_default();
+            *input_buffer = state.active_tab.clone().unwrap_or_default();
         }
         ActionKind::CloseActiveWorkspace => {
             if let Some(ws_id) = &state.active_workspace_id {

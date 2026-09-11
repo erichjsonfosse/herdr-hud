@@ -43,9 +43,9 @@ fn test_update_state_from_herdr_v09_snapshot() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_workspace_id.as_deref(), Some("w2"));
-    assert_eq!(state.active_workspace_label.as_deref(), Some("my-project"));
+    assert_eq!(state.active_workspace.as_deref(), Some("my-project"));
     assert_eq!(state.active_tab_id.as_deref(), Some("w2:t2"));
-    assert_eq!(state.active_tab_label.as_deref(), Some("terminal"));
+    assert_eq!(state.active_tab.as_deref(), Some("terminal"));
     assert_eq!(state.active_pane.as_deref(), Some("w2:p2"));
 }
 
@@ -79,9 +79,9 @@ fn test_update_state_from_legacy_data_snapshot() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_workspace_id.as_deref(), Some("w1"));
-    assert_eq!(state.active_workspace_label.as_deref(), Some("default"));
+    assert_eq!(state.active_workspace.as_deref(), Some("default"));
     assert_eq!(state.active_tab_id.as_deref(), Some("w1:t1"));
-    assert_eq!(state.active_tab_label.as_deref(), Some("main"));
+    assert_eq!(state.active_tab.as_deref(), Some("main"));
     assert_eq!(state.active_pane.as_deref(), Some("w1:p1"));
 }
 
@@ -93,9 +93,9 @@ fn test_update_state_empty_fallback() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_workspace_id, None);
-    assert_eq!(state.active_workspace_label, None);
+    assert_eq!(state.active_workspace, None);
     assert_eq!(state.active_tab_id, None);
-    assert_eq!(state.active_tab_label, None);
+    assert_eq!(state.active_tab, None);
     assert_eq!(state.active_pane, None);
 }
 
@@ -113,7 +113,6 @@ fn test_snapshot_workspace_fallback_when_workspaces_missing() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_workspace_id.as_deref(), Some("ws-orphan"));
-    assert_eq!(state.active_workspace_label.as_deref(), Some("ws-orphan"));
     assert_eq!(state.active_workspace.as_deref(), Some("ws-orphan"));
 }
 
@@ -138,7 +137,6 @@ fn test_snapshot_workspace_fallback_when_workspace_not_found_in_array() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_workspace_id.as_deref(), Some("ws-orphan"));
-    assert_eq!(state.active_workspace_label.as_deref(), Some("ws-orphan"));
     assert_eq!(state.active_workspace.as_deref(), Some("ws-orphan"));
 }
 
@@ -156,7 +154,6 @@ fn test_snapshot_tab_fallback_when_tabs_missing() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_tab_id.as_deref(), Some("tab-orphan"));
-    assert_eq!(state.active_tab_label.as_deref(), Some("tab-orphan"));
     assert_eq!(state.active_tab.as_deref(), Some("tab-orphan"));
 }
 
@@ -181,6 +178,5 @@ fn test_snapshot_tab_fallback_when_tab_not_found_in_array() {
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
 
     assert_eq!(state.active_tab_id.as_deref(), Some("tab-orphan"));
-    assert_eq!(state.active_tab_label.as_deref(), Some("tab-orphan"));
     assert_eq!(state.active_tab.as_deref(), Some("tab-orphan"));
 }

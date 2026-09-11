@@ -104,7 +104,7 @@ fn test_trigger_action_prompt_create_tab() {
 fn test_trigger_action_prompt_rename_workspace() {
     let action = make_test_action(ActionKind::PromptRenameWorkspace, None);
     let mut state = StatusBarState::new();
-    state.active_workspace_label = Some("dev-workspace".to_string());
+    state.active_workspace = Some("dev-workspace".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
     let mut pending_command = None;
@@ -123,7 +123,7 @@ fn test_trigger_action_prompt_rename_workspace() {
     assert_eq!(pending_command, None);
 
     // Fallback when active workspace label is None
-    state.active_workspace_label = None;
+    state.active_workspace = None;
     input_target = None;
     input_buffer = "stale".to_string();
     let executed = trigger_action(
@@ -144,7 +144,7 @@ fn test_trigger_action_prompt_rename_workspace() {
 fn test_trigger_action_prompt_rename_tab() {
     let action = make_test_action(ActionKind::PromptRenameTab, None);
     let mut state = StatusBarState::new();
-    state.active_tab_label = Some("editor-tab".to_string());
+    state.active_tab = Some("editor-tab".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
     let mut pending_command = None;
@@ -163,7 +163,7 @@ fn test_trigger_action_prompt_rename_tab() {
     assert_eq!(pending_command, None);
 
     // Fallback when active tab label is None
-    state.active_tab_label = None;
+    state.active_tab = None;
     input_target = None;
     input_buffer = "stale".to_string();
     let executed = trigger_action(
@@ -507,9 +507,9 @@ fn test_trigger_action_all_catalog_actions() {
 
     let mut state = StatusBarState::new();
     state.active_workspace_id = Some("ws-cat-1".to_string());
-    state.active_workspace_label = Some("cat-workspace".to_string());
+    state.active_workspace = Some("cat-workspace".to_string());
     state.active_tab_id = Some("tab-cat-1".to_string());
-    state.active_tab_label = Some("cat-tab".to_string());
+    state.active_tab = Some("cat-tab".to_string());
     state.active_pane = Some("pane-cat-1".to_string());
 
     for category in categories {
