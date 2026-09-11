@@ -6,12 +6,12 @@ use toml::Value as TomlValue;
 fn test_from_herdr_config_defaults() {
     let config = StatusBarConfig::from_herdr_config(None);
     assert_eq!(config.prefix_key, "Ctrl+B");
-    assert_eq!(config.normal_hints[0].key, "Ctrl+B");
-    assert_eq!(config.normal_hints[0].description, "Prefix");
-    assert_eq!(config.normal_hints[1].key, "c");
-    assert_eq!(config.normal_hints[1].description, "Tab");
-    assert_eq!(config.normal_hints[2].key, "v");
-    assert_eq!(config.normal_hints[2].description, "Split");
+    assert_eq!(config.hints[0].key, "Ctrl+B");
+    assert_eq!(config.hints[0].description, "Prefix");
+    assert_eq!(config.hints[1].key, "c");
+    assert_eq!(config.hints[1].description, "Tab");
+    assert_eq!(config.hints[2].key, "v");
+    assert_eq!(config.hints[2].description, "Split");
 }
 
 #[test]
@@ -23,7 +23,7 @@ fn test_from_herdr_config_custom_prefix() {
     let config = StatusBarConfig::from_herdr_config(Some(&toml_val));
 
     assert_eq!(config.prefix_key, "Ctrl+A");
-    assert_eq!(config.normal_hints[0].key, "Ctrl+A");
+    assert_eq!(config.hints[0].key, "Ctrl+A");
 }
 
 #[test]
@@ -38,10 +38,10 @@ fn test_from_herdr_config_custom_keys() {
     let config = StatusBarConfig::from_herdr_config(Some(&toml_val));
 
     assert_eq!(config.prefix_key, "Alt+Space");
-    assert_eq!(config.normal_hints[1].key, "t");
-    assert_eq!(config.normal_hints[1].description, "Tab");
-    assert_eq!(config.normal_hints[2].key, "s");
-    assert_eq!(config.normal_hints[2].description, "Split");
+    assert_eq!(config.hints[1].key, "t");
+    assert_eq!(config.hints[1].description, "Tab");
+    assert_eq!(config.hints[2].key, "s");
+    assert_eq!(config.hints[2].description, "Split");
 }
 
 #[test]
@@ -55,63 +55,8 @@ fn test_from_herdr_config_keys_section_fallback() {
     let config = StatusBarConfig::from_herdr_config(Some(&toml_val));
 
     assert_eq!(config.prefix_key, "Meta+Space");
-    assert_eq!(config.normal_hints[0].key, "Meta+Space");
-    assert_eq!(config.normal_hints[1].key, "n");
-}
-
-#[test]
-fn test_default_navigate_hints_and_scroll_hints() {
-    let config = StatusBarConfig::default();
-
-    // Verify navigate_hints
-    assert_eq!(config.navigate_hints.len(), 6);
-    assert_eq!(config.navigate_hints[0].key, "v");
-    assert_eq!(config.navigate_hints[0].description, "Split V");
-    assert_eq!(config.navigate_hints[1].key, "-");
-    assert_eq!(config.navigate_hints[1].description, "Split H");
-    assert_eq!(config.navigate_hints[2].key, "x");
-    assert_eq!(config.navigate_hints[2].description, "Close");
-    assert_eq!(config.navigate_hints[3].key, "z");
-    assert_eq!(config.navigate_hints[3].description, "Zoom");
-    assert_eq!(config.navigate_hints[4].key, "hjkl");
-    assert_eq!(config.navigate_hints[4].description, "Move");
-    assert_eq!(config.navigate_hints[5].key, "Esc");
-    assert_eq!(config.navigate_hints[5].description, "Return");
-
-    // Verify scroll_hints
-    assert_eq!(config.scroll_hints.len(), 3);
-    assert_eq!(config.scroll_hints[0].key, "j/k");
-    assert_eq!(config.scroll_hints[0].description, "Line");
-    assert_eq!(config.scroll_hints[1].key, "PgUp/PgDn");
-    assert_eq!(config.scroll_hints[1].description, "Page");
-    assert_eq!(config.scroll_hints[2].key, "Esc");
-    assert_eq!(config.scroll_hints[2].description, "Exit");
-}
-
-#[test]
-fn test_custom_navigate_hints_from_toml() {
-    let toml_str = r#"
-        [keybindings]
-        split_vertical = "prefix+backslash"
-        split_horizontal = "prefix+slash"
-        close_pane = "prefix+w"
-        zoom = "prefix+f"
-    "#;
-    let toml_val: TomlValue = toml::from_str(toml_str).unwrap();
-    let config = StatusBarConfig::from_herdr_config(Some(&toml_val));
-
-    assert_eq!(config.navigate_hints[0].key, "\\");
-    assert_eq!(config.navigate_hints[0].description, "Split V");
-    assert_eq!(config.navigate_hints[1].key, "/");
-    assert_eq!(config.navigate_hints[1].description, "Split H");
-    assert_eq!(config.navigate_hints[2].key, "w");
-    assert_eq!(config.navigate_hints[2].description, "Close");
-    assert_eq!(config.navigate_hints[3].key, "f");
-    assert_eq!(config.navigate_hints[3].description, "Zoom");
-    assert_eq!(config.navigate_hints[4].key, "hjkl");
-    assert_eq!(config.navigate_hints[4].description, "Move");
-    assert_eq!(config.navigate_hints[5].key, "Esc");
-    assert_eq!(config.navigate_hints[5].description, "Return");
+    assert_eq!(config.hints[0].key, "Meta+Space");
+    assert_eq!(config.hints[1].key, "n");
 }
 
 #[test]
@@ -122,16 +67,9 @@ fn test_load_resolution_order_json_override() {
     let json_path = temp.path().join("status-bar.json");
     let json_content = serde_json::json!({
         "prefix_key": "Ctrl+Space",
-        "show_clock": true,
-        "show_agents": true,
-        "normal_hints": [
-            { "key": "Ctrl+Space", "description": "Custom Prefix" }
-        ],
-        "navigate_hints": [
-            { "key": "x", "description": "Custom Close" }
-        ],
-        "scroll_hints": [
-            { "key": "Esc", "description": "Custom Exit" }
+        "hints": [
+            { "key": "Ctrl+Space", "description": "Custom Prefix" },
+            { "key": "t", "description": "Custom Tab" }
         ]
     });
     std::fs::write(&json_path, json_content.to_string()).expect("failed to write test json config");
@@ -145,17 +83,11 @@ fn test_load_resolution_order_json_override() {
     let config = StatusBarConfig::load();
 
     assert_eq!(config.prefix_key, "Ctrl+Space");
-    assert!(config.show_clock);
-    assert!(config.show_agents);
-    assert_eq!(config.normal_hints.len(), 1);
-    assert_eq!(config.normal_hints[0].key, "Ctrl+Space");
-    assert_eq!(config.normal_hints[0].description, "Custom Prefix");
-    assert_eq!(config.navigate_hints.len(), 1);
-    assert_eq!(config.navigate_hints[0].key, "x");
-    assert_eq!(config.navigate_hints[0].description, "Custom Close");
-    assert_eq!(config.scroll_hints.len(), 1);
-    assert_eq!(config.scroll_hints[0].key, "Esc");
-    assert_eq!(config.scroll_hints[0].description, "Custom Exit");
+    assert_eq!(config.hints.len(), 2);
+    assert_eq!(config.hints[0].key, "Ctrl+Space");
+    assert_eq!(config.hints[0].description, "Custom Prefix");
+    assert_eq!(config.hints[1].key, "t");
+    assert_eq!(config.hints[1].description, "Custom Tab");
 }
 
 #[test]
@@ -179,13 +111,11 @@ fn test_load_resolution_order_toml_fallback() {
     let config = StatusBarConfig::load();
 
     assert_eq!(config.prefix_key, "Ctrl+J");
-    assert_eq!(config.normal_hints[0].key, "Ctrl+J");
-    assert_eq!(config.normal_hints[1].key, "w");
-    assert_eq!(config.normal_hints[1].description, "Tab");
-    assert_eq!(config.normal_hints[2].key, "s");
-    assert_eq!(config.normal_hints[2].description, "Split");
-    assert!(!config.show_clock);
-    assert!(!config.show_agents);
+    assert_eq!(config.hints[0].key, "Ctrl+J");
+    assert_eq!(config.hints[1].key, "w");
+    assert_eq!(config.hints[1].description, "Tab");
+    assert_eq!(config.hints[2].key, "s");
+    assert_eq!(config.hints[2].description, "Split");
 }
 
 #[test]
@@ -202,10 +132,8 @@ fn test_load_resolution_order_defaults_fallback() {
     let config = StatusBarConfig::load();
 
     assert_eq!(config.prefix_key, "Ctrl+B");
-    assert_eq!(config.normal_hints[0].key, "Ctrl+B");
-    assert_eq!(config.normal_hints[0].description, "Prefix");
-    assert_eq!(config.normal_hints[1].key, "c");
-    assert_eq!(config.normal_hints[1].description, "Tab");
-    assert!(!config.show_clock);
-    assert!(!config.show_agents);
+    assert_eq!(config.hints[0].key, "Ctrl+B");
+    assert_eq!(config.hints[0].description, "Prefix");
+    assert_eq!(config.hints[1].key, "c");
+    assert_eq!(config.hints[1].description, "Tab");
 }

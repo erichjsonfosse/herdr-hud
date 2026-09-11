@@ -3,20 +3,16 @@ use crate::helpers::paths::{herdr_config_path, plugin_config_path};
 use serde::{Deserialize, Serialize};
 use toml::Value as TomlValue;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct KeyHint {
     pub key: String,
     pub description: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct StatusBarConfig {
     pub prefix_key: String,
-    pub show_clock: bool,
-    pub show_agents: bool,
-    pub normal_hints: Vec<KeyHint>,
-    pub navigate_hints: Vec<KeyHint>,
-    pub scroll_hints: Vec<KeyHint>,
+    pub hints: Vec<KeyHint>,
 }
 
 impl Default for StatusBarConfig {
@@ -76,13 +72,12 @@ impl StatusBarConfig {
 
         let raw_new_tab = get_key("new_tab", "prefix+c");
         let raw_split_v = get_key("split_vertical", "prefix+v");
-        let raw_split_h = get_key("split_horizontal", "prefix+minus");
         let raw_close = get_key("close_pane", "prefix+x");
         let raw_zoom = get_key("zoom", "prefix+z");
         let raw_help = get_key("help", "prefix+?");
         let raw_detach = get_key("detach", "prefix+q");
 
-        let normal_hints = vec![
+        let hints = vec![
             KeyHint {
                 key: formatted_prefix.clone(),
                 description: "Prefix".to_string(),
@@ -113,55 +108,9 @@ impl StatusBarConfig {
             },
         ];
 
-        let navigate_hints = vec![
-            KeyHint {
-                key: format_action_key_in_navigate(&raw_split_v),
-                description: "Split V".to_string(),
-            },
-            KeyHint {
-                key: format_action_key_in_navigate(&raw_split_h),
-                description: "Split H".to_string(),
-            },
-            KeyHint {
-                key: format_action_key_in_navigate(&raw_close),
-                description: "Close".to_string(),
-            },
-            KeyHint {
-                key: format_action_key_in_navigate(&raw_zoom),
-                description: "Zoom".to_string(),
-            },
-            KeyHint {
-                key: "hjkl".to_string(),
-                description: "Move".to_string(),
-            },
-            KeyHint {
-                key: "Esc".to_string(),
-                description: "Return".to_string(),
-            },
-        ];
-
-        let scroll_hints = vec![
-            KeyHint {
-                key: "j/k".to_string(),
-                description: "Line".to_string(),
-            },
-            KeyHint {
-                key: "PgUp/PgDn".to_string(),
-                description: "Page".to_string(),
-            },
-            KeyHint {
-                key: "Esc".to_string(),
-                description: "Exit".to_string(),
-            },
-        ];
-
         Self {
             prefix_key: formatted_prefix,
-            show_clock: false,
-            show_agents: false,
-            normal_hints,
-            navigate_hints,
-            scroll_hints,
+            hints,
         }
     }
 }
