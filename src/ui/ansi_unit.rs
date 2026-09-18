@@ -7,12 +7,13 @@ fn test_render_ansi_line_basic() {
     let line = render_ansi_line(&config);
 
     assert!(line.starts_with("🐾 "));
-    assert!(line.contains("<Ctrl+B>"));
-    assert!(line.contains("Prefix"));
+    assert!(!line.contains("Prefix"));
     assert!(line.contains("<c>"));
     assert!(line.contains("Tab"));
     assert!(line.contains("<v>"));
-    assert!(line.contains("Split"));
+    assert!(line.contains("Vert"));
+    assert!(line.contains("<->"));
+    assert!(line.contains("Horiz"));
     assert!(line.contains("\x1b[90m │ \x1b[0m"));
 }
 

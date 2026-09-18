@@ -69,6 +69,7 @@ impl HudConfig {
 
         let raw_new_tab = get_key("new_tab", "prefix+c");
         let raw_split_v = get_key("split_vertical", "prefix+v");
+        let raw_split_h = get_key("split_horizontal", "prefix+-");
         let raw_close = get_key("close_pane", "prefix+x");
         let raw_zoom = get_key("zoom", "prefix+z");
         let raw_help = get_key("help", "prefix+?");
@@ -76,16 +77,16 @@ impl HudConfig {
 
         let hints = vec![
             KeyHint {
-                key: formatted_prefix.clone(),
-                description: "Prefix".to_string(),
-            },
-            KeyHint {
                 key: format_action_key_in_navigate(raw_new_tab),
                 description: "Tab".to_string(),
             },
             KeyHint {
                 key: format_action_key_in_navigate(raw_split_v),
-                description: "Split".to_string(),
+                description: "Vert".to_string(),
+            },
+            KeyHint {
+                key: format_action_key_in_navigate(raw_split_h),
+                description: "Horiz".to_string(),
             },
             KeyHint {
                 key: format_action_key_in_navigate(raw_close),
