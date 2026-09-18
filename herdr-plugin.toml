@@ -1,11 +1,12 @@
 id = "herdr-hud"
 name = "Herdr HUD"
 version = "0.1.0"
+min_herdr_version = "0.9.0"
 description = "Context-based HUD, and command palette for the Herdr workspace manager"
 authors = ["Erich Json Fosse"]
 platforms = ["linux", "macos"]
 
-[build]
+[[build]]
 command = ["cargo", "build", "--release"]
 
 [[panes]]
