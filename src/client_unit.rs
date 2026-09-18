@@ -3,7 +3,7 @@ use serde_json::json;
 
 #[test]
 fn test_update_state_from_herdr_v09_snapshot() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({
         "id": "cli:api:snapshot",
         "result": {
@@ -51,7 +51,7 @@ fn test_update_state_from_herdr_v09_snapshot() {
 
 #[test]
 fn test_update_state_from_legacy_data_snapshot() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({
         "data": {
             "session_snapshot": {
@@ -87,7 +87,7 @@ fn test_update_state_from_legacy_data_snapshot() {
 
 #[test]
 fn test_update_state_empty_fallback() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({});
 
     HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
@@ -101,7 +101,7 @@ fn test_update_state_empty_fallback() {
 
 #[test]
 fn test_snapshot_workspace_fallback_when_workspaces_missing() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({
         "result": {
             "snapshot": {
@@ -118,7 +118,7 @@ fn test_snapshot_workspace_fallback_when_workspaces_missing() {
 
 #[test]
 fn test_snapshot_workspace_fallback_when_workspace_not_found_in_array() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({
         "result": {
             "snapshot": {
@@ -142,7 +142,7 @@ fn test_snapshot_workspace_fallback_when_workspace_not_found_in_array() {
 
 #[test]
 fn test_snapshot_tab_fallback_when_tabs_missing() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({
         "result": {
             "snapshot": {
@@ -159,7 +159,7 @@ fn test_snapshot_tab_fallback_when_tabs_missing() {
 
 #[test]
 fn test_snapshot_tab_fallback_when_tab_not_found_in_array() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let snapshot = json!({
         "result": {
             "snapshot": {

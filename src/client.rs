@@ -1,5 +1,5 @@
 use crate::helpers::paths::discover_socket;
-use crate::state::StatusBarState;
+use crate::state::HudState;
 use serde_json::Value;
 use std::path::PathBuf;
 use std::process::Command;
@@ -38,7 +38,7 @@ impl HerdrClient {
         }
     }
 
-    pub fn update_state_from_snapshot(state: &mut StatusBarState, snapshot: &Value) {
+    pub fn update_state_from_snapshot(state: &mut HudState, snapshot: &Value) {
         let session = snapshot
             .pointer("/result/snapshot")
             .or_else(|| snapshot.pointer("/data/session_snapshot"))

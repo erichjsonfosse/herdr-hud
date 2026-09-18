@@ -1,5 +1,5 @@
 use super::*;
-use crate::config::StatusBarConfig;
+use crate::config::HudConfig;
 use crate::palette::get_palette_categories;
 
 #[test]
@@ -36,7 +36,7 @@ fn test_format_action_description_tiny_width() {
 
 #[test]
 fn test_hit_test_category_tab_hits_correct_tabs() {
-    let config = StatusBarConfig::default();
+    let config = HudConfig::default();
     let categories = get_palette_categories(&config);
     // Categories are:
     // 0: "Workspaces" -> "  [1. Workspaces]  " (len 19, cols 1..20)
@@ -90,7 +90,7 @@ fn test_hit_test_action_item() {
 
 #[test]
 fn test_hit_test_with_custom_origin() {
-    let config = StatusBarConfig::default();
+    let config = HudConfig::default();
     let categories = get_palette_categories(&config);
     // Custom origin: x=10, y=5
     // cat_tabs_y is 5 + 5 = 10

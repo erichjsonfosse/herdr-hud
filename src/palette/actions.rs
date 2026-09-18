@@ -1,5 +1,5 @@
-use crate::config::StatusBarConfig;
-use crate::state::StatusBarState;
+use crate::config::HudConfig;
+use crate::state::HudState;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ActionKind {
@@ -39,7 +39,7 @@ pub enum ModalInputTarget {
     RenameTab,
 }
 
-pub fn get_palette_categories(config: &StatusBarConfig) -> Vec<PaletteCategory> {
+pub fn get_palette_categories(config: &HudConfig) -> Vec<PaletteCategory> {
     let p = &config.prefix_key;
     vec![
         PaletteCategory {
@@ -168,7 +168,7 @@ pub fn get_palette_categories(config: &StatusBarConfig) -> Vec<PaletteCategory> 
 
 pub fn trigger_action(
     action: &PaletteAction,
-    state: &StatusBarState,
+    state: &HudState,
     input_target: &mut Option<ModalInputTarget>,
     input_buffer: &mut String,
     pending_command: &mut Option<Vec<String>>,
@@ -281,7 +281,7 @@ pub fn trigger_action(
 pub fn build_prompt_command(
     target: &ModalInputTarget,
     input: &str,
-    state: &StatusBarState,
+    state: &HudState,
 ) -> Option<Vec<String>> {
     let trimmed = input.trim();
     match target {

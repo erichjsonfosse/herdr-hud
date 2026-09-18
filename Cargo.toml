@@ -1,8 +1,8 @@
 [package]
-name = "herdr-status-bar"
+name = "herdr-hud"
 version = "0.1.0"
 edition = "2024"
-description = "Context-based Zellij-inspired status bar for the Herdr workspace manager"
+description = "Context-based HUD, and command palette for the Herdr workspace manager"
 authors = ["Erich Json Fosse"]
 license = "MIT"
 

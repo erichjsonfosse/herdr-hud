@@ -1,11 +1,11 @@
 use clap::{Parser, Subcommand};
-use herdr_status_bar::client::HerdrClient;
-use herdr_status_bar::config::StatusBarConfig;
-use herdr_status_bar::ui::{render_ansi_line, run_modal_menu};
+use herdr_hud::client::HerdrClient;
+use herdr_hud::config::{HudConfig};
+use herdr_hud::ui::{render_ansi_line, run_modal_menu};
 
 #[derive(Parser)]
-#[command(name = "herdr-status-bar")]
-#[command(about = "Context-based Zellij-inspired status bar for Herdr")]
+#[command(name = "herdr-hud")]
+#[command(about = "Context-based HUD, and command palette for Herdr")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -13,7 +13,7 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Commands {
-    /// Print a single ANSI-formatted status line (useful for tab bar or external scripts)
+    /// Print a single ANSI-formatted line (useful for tab bar or external scripts)
     Line,
     /// Open the interactive Command Palette & Shortcut Reference modal popup
     Menu,
@@ -26,11 +26,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match cli.command.unwrap_or(Commands::Line) {
         Commands::Line => {
-            let config = StatusBarConfig::load();
+            let config = HudConfig::load();
             println!("{}", render_ansi_line(&config));
         }
         Commands::Menu => {
-            let config = StatusBarConfig::load();
+            let config = HudConfig::load();
             let client = HerdrClient::new();
             run_modal_menu(client, config)?;
         }

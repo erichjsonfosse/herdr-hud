@@ -63,9 +63,9 @@ fn test_plugin_config_path_default() {
     let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("plugin_config_default");
     let _home_guard = EnvVarGuard::set("HOME", temp.path());
-    let _plugin_guard = EnvVarGuard::remove("HERDR_STATUS_BAR_CONFIG");
+    let _hud_guard = EnvVarGuard::remove("HERDR_HUD_CONFIG");
 
-    let expected = temp.path().join(".config/herdr/status-bar.json");
+    let expected = temp.path().join(".config/herdr/hud.json");
     assert_eq!(plugin_config_path(), expected);
 }
 
@@ -73,8 +73,8 @@ fn test_plugin_config_path_default() {
 fn test_plugin_config_path_with_env() {
     let _lock = TEST_ENV_MUTEX.lock().unwrap_or_else(|e| e.into_inner());
     let temp = TempDir::new("plugin_config_custom");
-    let custom_path = temp.path().join("my_status_bar.json");
-    let _plugin_guard = EnvVarGuard::set("HERDR_STATUS_BAR_CONFIG", &custom_path);
+    let custom_path = temp.path().join("my_hud.json");
+    let _hud_guard = EnvVarGuard::set("HERDR_HUD_CONFIG", &custom_path);
 
     assert_eq!(plugin_config_path(), custom_path);
 }

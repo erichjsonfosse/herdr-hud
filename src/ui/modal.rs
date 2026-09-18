@@ -1,11 +1,11 @@
 use super::terminal::TerminalGuard;
 use crate::client::HerdrClient;
-use crate::config::StatusBarConfig;
+use crate::config::HudConfig;
 use crate::palette::{
     ActionKind, ModalInputTarget, PaletteCategory, build_prompt_command, get_palette_categories,
     trigger_action,
 };
-use crate::state::StatusBarState;
+use crate::state::HudState;
 use crossterm::event::{
     self, Event, KeyCode, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
@@ -92,7 +92,7 @@ pub(crate) fn hit_test_action_item(row: u16, total_actions: usize) -> Option<usi
 }
 
 pub struct MenuModalWidget<'a> {
-    pub state: &'a StatusBarState,
+    pub state: &'a HudState,
     pub categories: &'a [PaletteCategory],
     pub active_category_idx: usize,
     pub active_action_idx: usize,
@@ -447,7 +447,7 @@ impl<'a> Widget for MenuModalWidget<'a> {
 
 pub fn run_modal_menu(
     client: HerdrClient,
-    config: StatusBarConfig,
+    config: HudConfig,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut pending_command: Option<Vec<String>> = None;
 
@@ -457,7 +457,7 @@ pub fn run_modal_menu(
         let backend = CrosstermBackend::new(stdout);
         let mut terminal = Terminal::new(backend)?;
 
-        let mut state = StatusBarState::new();
+        let mut state = HudState::new();
         if let Some(snapshot) = client.fetch_snapshot_sync() {
             HerdrClient::update_state_from_snapshot(&mut state, &snapshot);
         }

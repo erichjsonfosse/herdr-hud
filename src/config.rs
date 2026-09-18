@@ -10,23 +10,23 @@ pub struct KeyHint {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct StatusBarConfig {
+pub struct HudConfig {
     pub prefix_key: String,
     pub hints: Vec<KeyHint>,
 }
 
-impl Default for StatusBarConfig {
+impl Default for HudConfig {
     fn default() -> Self {
         Self::from_herdr_config(None)
     }
 }
 
-impl StatusBarConfig {
+impl HudConfig {
     pub fn load() -> Self {
-        // 1. Try to read from status-bar specific override JSON if present
+        // 1. Try to read from HUD-specific override JSON if present
         let plugin_override_path = plugin_config_path();
         if let Ok(content) = std::fs::read_to_string(&plugin_override_path)
-            && let Ok(cfg) = serde_json::from_str::<StatusBarConfig>(&content)
+            && let Ok(cfg) = serde_json::from_str::<HudConfig>(&content)
         {
             return cfg;
         }

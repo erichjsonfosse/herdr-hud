@@ -18,10 +18,10 @@ pub fn herdr_config_path() -> PathBuf {
 }
 
 pub fn plugin_config_path() -> PathBuf {
-    if let Some(custom) = std::env::var_os("HERDR_STATUS_BAR_CONFIG") {
+    if let Some(custom) = std::env::var_os("HERDR_HUD_CONFIG") {
         return PathBuf::from(custom);
     }
-    home_dir().join(".config/herdr/status-bar.json")
+    home_dir().join(".config/herdr/hud.json")
 }
 
 pub fn discover_socket() -> Option<PathBuf> {

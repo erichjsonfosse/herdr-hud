@@ -1,6 +1,6 @@
 use super::*;
-use crate::config::StatusBarConfig;
-use crate::state::StatusBarState;
+use crate::config::HudConfig;
+use crate::state::HudState;
 
 fn make_test_action(kind: ActionKind, command: Option<Vec<String>>) -> PaletteAction {
     PaletteAction {
@@ -14,7 +14,7 @@ fn make_test_action(kind: ActionKind, command: Option<Vec<String>>) -> PaletteAc
 
 #[test]
 fn test_palette_categories_contain_expected_items() {
-    let config = StatusBarConfig::default();
+    let config = HudConfig::default();
     let categories = get_palette_categories(&config);
 
     assert_eq!(categories.len(), 3);
@@ -53,7 +53,7 @@ fn test_trigger_action_direct_command() {
             "create".to_string(),
         ]),
     );
-    let state = StatusBarState::new();
+    let state = HudState::new();
     let mut input_target = None;
     let mut input_buffer = String::new();
     let mut pending_command = None;
@@ -96,7 +96,7 @@ fn test_trigger_action_direct_command() {
 #[test]
 fn test_trigger_action_prompt_create_tab() {
     let action = make_test_action(ActionKind::PromptCreateTab, None);
-    let state = StatusBarState::new();
+    let state = HudState::new();
     let mut input_target = None;
     let mut input_buffer = "previous input text".to_string();
     let mut pending_command = None;
@@ -118,7 +118,7 @@ fn test_trigger_action_prompt_create_tab() {
 #[test]
 fn test_trigger_action_prompt_rename_workspace() {
     let action = make_test_action(ActionKind::PromptRenameWorkspace, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_workspace = Some("dev-workspace".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
@@ -158,7 +158,7 @@ fn test_trigger_action_prompt_rename_workspace() {
 #[test]
 fn test_trigger_action_prompt_rename_tab() {
     let action = make_test_action(ActionKind::PromptRenameTab, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_tab = Some("editor-tab".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
@@ -198,7 +198,7 @@ fn test_trigger_action_prompt_rename_tab() {
 #[test]
 fn test_trigger_action_close_active_workspace() {
     let action = make_test_action(ActionKind::CloseActiveWorkspace, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_workspace_id = Some("ws-abc-123".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
@@ -241,7 +241,7 @@ fn test_trigger_action_close_active_workspace() {
 #[test]
 fn test_trigger_action_close_active_tab() {
     let action = make_test_action(ActionKind::CloseActiveTab, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_tab_id = Some("tab-xyz-456".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
@@ -284,7 +284,7 @@ fn test_trigger_action_close_active_tab() {
 #[test]
 fn test_trigger_action_close_active_pane() {
     let action = make_test_action(ActionKind::CloseActivePane, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_pane = Some("pane-def-789".to_string());
     let mut input_target = None;
     let mut input_buffer = String::new();
@@ -327,7 +327,7 @@ fn test_trigger_action_close_active_pane() {
 #[test]
 fn test_trigger_action_split_vertical() {
     let action = make_test_action(ActionKind::SplitVertical, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let mut input_target = None;
     let mut input_buffer = String::new();
     let mut pending_command = None;
@@ -385,7 +385,7 @@ fn test_trigger_action_split_vertical() {
 #[test]
 fn test_trigger_action_split_horizontal() {
     let action = make_test_action(ActionKind::SplitHorizontal, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let mut input_target = None;
     let mut input_buffer = String::new();
     let mut pending_command = None;
@@ -443,7 +443,7 @@ fn test_trigger_action_split_horizontal() {
 #[test]
 fn test_trigger_action_toggle_zoom() {
     let action = make_test_action(ActionKind::ToggleZoom, None);
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     let mut input_target = None;
     let mut input_buffer = String::new();
     let mut pending_command = None;
@@ -498,7 +498,7 @@ fn test_trigger_action_toggle_zoom() {
 #[test]
 fn test_trigger_action_shortcut_only() {
     let action = make_test_action(ActionKind::ShortcutOnly, None);
-    let state = StatusBarState::new();
+    let state = HudState::new();
     let mut input_target = None;
     let mut input_buffer = "unmodified_buffer".to_string();
     let mut pending_command = None;
@@ -519,10 +519,10 @@ fn test_trigger_action_shortcut_only() {
 
 #[test]
 fn test_trigger_action_all_catalog_actions() {
-    let config = StatusBarConfig::default();
+    let config = HudConfig::default();
     let categories = get_palette_categories(&config);
 
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_workspace_id = Some("ws-cat-1".to_string());
     state.active_workspace = Some("cat-workspace".to_string());
     state.active_tab_id = Some("tab-cat-1".to_string());
@@ -657,7 +657,7 @@ fn test_trigger_action_all_catalog_actions() {
 
 #[test]
 fn test_build_prompt_command_create_tab_with_name() {
-    let state = StatusBarState::new();
+    let state = HudState::new();
     let cmd = build_prompt_command(&ModalInputTarget::CreateTab, "my-new-tab", &state);
     assert_eq!(
         cmd,
@@ -674,7 +674,7 @@ fn test_build_prompt_command_create_tab_with_name() {
 
 #[test]
 fn test_build_prompt_command_create_tab_whitespace_trimming() {
-    let state = StatusBarState::new();
+    let state = HudState::new();
     let cmd = build_prompt_command(&ModalInputTarget::CreateTab, "   trimmed-tab   ", &state);
     assert_eq!(
         cmd,
@@ -691,7 +691,7 @@ fn test_build_prompt_command_create_tab_whitespace_trimming() {
 
 #[test]
 fn test_build_prompt_command_create_tab_empty_or_spaces() {
-    let state = StatusBarState::new();
+    let state = HudState::new();
     let cmd_empty = build_prompt_command(&ModalInputTarget::CreateTab, "", &state);
     assert_eq!(
         cmd_empty,
@@ -717,7 +717,7 @@ fn test_build_prompt_command_create_tab_empty_or_spaces() {
 
 #[test]
 fn test_build_prompt_command_rename_workspace_success() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_workspace_id = Some("ws-alpha-1".to_string());
 
     let cmd = build_prompt_command(&ModalInputTarget::RenameWorkspace, "project-work", &state);
@@ -735,7 +735,7 @@ fn test_build_prompt_command_rename_workspace_success() {
 
 #[test]
 fn test_build_prompt_command_rename_workspace_whitespace_trimming() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_workspace_id = Some("ws-alpha-1".to_string());
 
     let cmd = build_prompt_command(
@@ -757,7 +757,7 @@ fn test_build_prompt_command_rename_workspace_whitespace_trimming() {
 
 #[test]
 fn test_build_prompt_command_rename_workspace_empty_or_whitespace() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_workspace_id = Some("ws-alpha-1".to_string());
 
     let cmd_empty = build_prompt_command(&ModalInputTarget::RenameWorkspace, "", &state);
@@ -769,14 +769,14 @@ fn test_build_prompt_command_rename_workspace_empty_or_whitespace() {
 
 #[test]
 fn test_build_prompt_command_rename_workspace_missing_id() {
-    let state = StatusBarState::new(); // active_workspace_id is None
+    let state = HudState::new(); // active_workspace_id is None
     let cmd = build_prompt_command(&ModalInputTarget::RenameWorkspace, "new-name", &state);
     assert_eq!(cmd, None);
 }
 
 #[test]
 fn test_build_prompt_command_rename_tab_success() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_tab_id = Some("tab-beta-2".to_string());
 
     let cmd = build_prompt_command(&ModalInputTarget::RenameTab, "editor", &state);
@@ -794,7 +794,7 @@ fn test_build_prompt_command_rename_tab_success() {
 
 #[test]
 fn test_build_prompt_command_rename_tab_whitespace_trimming() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_tab_id = Some("tab-beta-2".to_string());
 
     let cmd = build_prompt_command(&ModalInputTarget::RenameTab, "   editor   ", &state);
@@ -812,7 +812,7 @@ fn test_build_prompt_command_rename_tab_whitespace_trimming() {
 
 #[test]
 fn test_build_prompt_command_rename_tab_empty_or_whitespace() {
-    let mut state = StatusBarState::new();
+    let mut state = HudState::new();
     state.active_tab_id = Some("tab-beta-2".to_string());
 
     let cmd_empty = build_prompt_command(&ModalInputTarget::RenameTab, "", &state);
@@ -824,7 +824,7 @@ fn test_build_prompt_command_rename_tab_empty_or_whitespace() {
 
 #[test]
 fn test_build_prompt_command_rename_tab_missing_id() {
-    let state = StatusBarState::new(); // active_tab_id is None
+    let state = HudState::new(); // active_tab_id is None
     let cmd = build_prompt_command(&ModalInputTarget::RenameTab, "editor", &state);
     assert_eq!(cmd, None);
 }

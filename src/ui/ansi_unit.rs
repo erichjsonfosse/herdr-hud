@@ -3,7 +3,7 @@ use crate::config::KeyHint;
 
 #[test]
 fn test_render_ansi_line_basic() {
-    let config = StatusBarConfig::default();
+    let config = HudConfig::default();
     let line = render_ansi_line(&config);
 
     assert!(line.starts_with("🐾 "));
@@ -18,7 +18,7 @@ fn test_render_ansi_line_basic() {
 
 #[test]
 fn test_render_ansi_line_custom_hints() {
-    let config = StatusBarConfig {
+    let config = HudConfig {
         prefix_key: "Alt+A".to_string(),
         hints: vec![
             KeyHint {
@@ -41,7 +41,7 @@ fn test_render_ansi_line_custom_hints() {
 
 #[test]
 fn test_render_ansi_line_empty_hints() {
-    let config = StatusBarConfig {
+    let config = HudConfig {
         prefix_key: "Ctrl+B".to_string(),
         hints: vec![],
     };
@@ -52,7 +52,7 @@ fn test_render_ansi_line_empty_hints() {
 
 #[test]
 fn test_render_ansi_line_single_hint_has_no_separator() {
-    let config = StatusBarConfig {
+    let config = HudConfig {
         prefix_key: "Ctrl+B".to_string(),
         hints: vec![KeyHint {
             key: "q".to_string(),

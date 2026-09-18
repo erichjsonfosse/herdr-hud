@@ -1,6 +1,6 @@
-use crate::config::StatusBarConfig;
+use crate::config::HudConfig;
 
-pub fn render_ansi_line(config: &StatusBarConfig) -> String {
+pub fn render_ansi_line(config: &HudConfig) -> String {
     if config.hints.is_empty() {
         return "🐾 ".to_string();
     }
