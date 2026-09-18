@@ -9,6 +9,13 @@ platforms = ["linux", "macos"]
 [[build]]
 command = ["cargo", "build", "--release"]
 
+[[build]]
+command = [
+  "sh",
+  "-c",
+  "mkdir -p \"$HOME/.local/bin\" && ln -sf \"$PWD/target/release/herdr-hud\" \"$HOME/.local/bin/herdr-hud\" && echo \"\n  ✔ herdr-hud: Symlinked binary to $HOME/.local/bin/herdr-hud\n\"",
+]
+
 [[panes]]
 id = "menu"
 title = "Tuxedo Cat & Shortcuts"
