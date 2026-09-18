@@ -13,7 +13,7 @@ command = ["cargo", "build", "--release"]
 command = [
   "sh",
   "-c",
-  "mkdir -p \"$HOME/.local/bin\" && ln -sf \"$PWD/target/release/herdr-hud\" \"$HOME/.local/bin/herdr-hud\" && echo \"\n  ✔ herdr-hud: Symlinked binary to $HOME/.local/bin/herdr-hud\n\"",
+  "mkdir -p \"$HOME/.local/bin\" && rm -f \"$HOME/.local/bin/herdr-hud\" && cp -f target/release/herdr-hud \"$HOME/.local/bin/herdr-hud\" && echo \"\n  ✔ herdr-hud: Installed binary to $HOME/.local/bin/herdr-hud\n\"",
 ]
 
 [[panes]]
