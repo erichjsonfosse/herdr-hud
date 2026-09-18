@@ -38,7 +38,7 @@ Runs the test suite across all modules (key parsing, path discovery, IPC client,
 ## 📖 Usage & Configuration
 
 ### 1. Top Tab Bar HUD Setup
-In your `~/.config/herdr/config.local.toml`:
+In your `~/.config/herdr/config.toml`:
 
 ```toml
 [ui]
@@ -50,7 +50,7 @@ tab_bar_right = [
 > **Note:** If `herdr-hud` is not in your `$PATH`, provide the absolute binary path (e.g. `/<project-path>/target/release/herdr-hud line`).
 
 ### 2. Floating Command Palette Modal (`Ctrl+B Space`)
-In your `~/.config/herdr/config.local.toml` (or `config.toml`), add under `[[keys.command]]`:
+In your `~/.config/herdr/config.toml`, add under `[[keys.command]]`:
 
 ```toml
 [[keys.command]]
